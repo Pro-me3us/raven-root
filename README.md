@@ -38,8 +38,8 @@ We take advantage of Frederic's previous article on <a href="https://fredericb.i
 Build
 The code is built using GNU C cross-compiler for the arm64 architecture (packages gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu on Debian) :
 
-<code>sudo aarch64-linux-gnu-gcc -O3 -nostdlib -Wl,--build-id=none -o S922X_dump_bootrom.elf S922X_dump_bootrom.c
-sudo aarch64-linux-gnu-objcopy -O binary -j .text S922X_dump_bootrom.elf S922X_dump_bootrom.bin</code>
+<code>sudo aarch64-linux-gnu-gcc -O3 -nostdlib -Wl,--build-id=none -o S922X_dump_bootrom.elf S922X_dump_bootrom.c</code>
+<code.sudo aarch64-linux-gnu-objcopy -O binary -j .text S922X_dump_bootrom.elf S922X_dump_bootrom.bin</code>
 
 Then, the binary is packaged as regular BL2 image for this target using the aml_encrypt_g12a tool from khadas-uboot repository:
 
