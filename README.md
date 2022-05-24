@@ -8,14 +8,14 @@ This expoit is based on a <a href="https://fredericb.info/2021/02/amlogic-usbdl-
 You are solely responsible for any potential damage(s) caused to your device by this exploit.
 
 # Requirements
-   <li>FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3<sup>1</sup></li>
-   <li>Micro-USB cable</li>
-   <li>Device to put Cube into device firmware upgrade (DFU) mode<sup>2</sup></li>
-   <li>Linux installation or live-system (Ubuntu 20+ recommended)</li>
-   <li><code>libusb-dev</code> installed</li>
+<li>FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3[^1]</li>
+<li>Micro-USB cable</li>
+<li>Device to put Cube into device firmware upgrade (DFU) mode<sup>2</sup></li>
+<li>Linux installation or live-system (Ubuntu 20+ recommended)</li>
+<li><code>libusb-dev</code> installed</li>
 
 <br>  
-<sup>1</sup>In February to March 2022, Amazon began rolling out firmware version 7.2.7.3/2625 which burned efuses to disable USB boot, and bar DFU entry needed by this exploit.  As of May 2022, new 2nd gen Cubes are still shipped with fireware version 7.2.2.9/1856 and can be prevented from updating to the newest firmware during the registration process by following this <a href="https://www.aftvnews.com/how-to-skip-software-updates-during-initial-setup-or-factory-reset-on-a-fire-tv-firestick-or-fire-tv-cube/">guide</a>.<br><br>
+[^1]: <sup>1</sup>In February to March 2022, Amazon began rolling out firmware version 7.2.7.3/2625 which burned efuses to disable USB boot, and bar DFU entry needed by this exploit.  As of May 2022, new 2nd gen Cubes are still shipped with fireware version 7.2.2.9/1856 and can be prevented from updating to the newest firmware during the registration process by following this <a href="https://www.aftvnews.com/how-to-skip-software-updates-during-initial-setup-or-factory-reset-on-a-fire-tv-firestick-or-fire-tv-cube/">guide</a>.<br><br>
 <sup>2</sup>To put the 2nd gen Cube into device firmware upgrade (DFU) mode we need to pass a 'boot@usb' command, to the Cube's Amlogic s922x SOC, through its I2C bus via the HDMI port.  This was first described in the <a href="https://blog.exploitee.rs/2018/rooting-the-firetv-cube-and-pendant-with-firefu">FireFU</a> exploit for the 1st gen Cube & Pendant.  Since then there are a few more options for devices to accmplish this: 
 
 1) Arduino sketch to boot into DFU, compatible with ARM-based Arduino boards (Due, Teensy, Genuino)<br>
@@ -30,13 +30,11 @@ https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle<br>
 # Explanation
 In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  Security researchers Jan Altensen (Stricted) and Nolen Johnson (npjohnson) extended on this work, disabling secure boot & anti-rollback checks in the bootloader and release a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast.<br>
 
-In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of adapting and replicating Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads that Frederic had written for the S905D3, we would need to obtain the S922X bootrom.
+In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of adapting and replicating Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads that Frederic had written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses.
 
-Dumping the S922X bootrom
-
-
-
-To use Frederic's amlogic-usbdl exploit tool, I would first need to modify the code to update any S905D3 bootrom addresses to those for the S922X bootrom.  It was here that I took advantage of Frederic's detailed walkthroughs to replicate his previous work, starting with extracting the S922X bootrom code.
+### Dumping S922X bootrom
+We take advantage of Frederic's previous article on how to dump an Amlogic bootrom.
+Frederic wrote a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. We instead need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+.
 
 
 
