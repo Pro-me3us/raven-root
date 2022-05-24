@@ -48,10 +48,10 @@ Then, the binary is packaged as regular BL2 image for this target using the aml_
 ### Updating amlogic-usbdl & payloads
 To determine whether S922X was vulnerable we would try to extract the bootrom again using the <code>amlogic-usbdl</code> tool that exploits the bug to execute unverified code by the bootrom.  The code we need to execute is the <code>dump_bootrom_uart_s922x.S</code> payload, with instructions to dump the bootrom code over UART.  Examinging the S922X bootrom extracted from the Odroid N2+ we update the payload with the S922X UART hardward address.
 
-<code>.text
-.global _start
-
-_start:
+<code>.text</br>
+.global _start</br>
+<br>
+_start:<br>
 	ldr w19, _uart_putc
     mov w20, 0x10000 // size
 	ldr w21, _addr
