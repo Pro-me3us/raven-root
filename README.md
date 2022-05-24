@@ -25,4 +25,18 @@ https://www.exploitee.rs/index.php/FireFU_Exploit#Preparing_HDMI_dongle
 https://github.com/tchebb/amlogic-hdmiboot-avr
 
 3) DIY modified dummy HDMI dongle. Fully self-contained, and powered by the HDMI port.<br>
-https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle
+https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle<br>
+
+# Explanation
+In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  Security researchers Jan Altensen (Stricted) and Nolen Johnson (npjohnson) extended on this work, disabling secure boot & anti-rollback checks in the bootloader and release a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast.<br><br>
+
+In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of trying to adapt and replicate Frederic's previous S905D3 methods and tools to the S922X.  Thanks for thorough    
+
+To use Frederic's amlogic-usbdl exploit tool, I would first need to modify the code to update any S905D3 bootrom addresses to those for the S922X bootrom.  It was here that I took advantage of Frederic's detailed walkthroughs to replicate his previous work, starting with extracting the S922X bootrom code.
+
+
+
+
+
+
+
