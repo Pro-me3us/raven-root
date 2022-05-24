@@ -33,7 +33,7 @@ In late 2020 security researcher Frederic Basse discovered a <a href="https://fr
 In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of adapting and replicating Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads that Frederic had written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses.
 
 ### Dumping S922X bootrom
-We take advantage of Frederic's previous article on <a href="https://fredericb.info/2021/02/dump-amlogic-s905d3-bootrom-from-khadas-vim3l-board.html">how to dump the S905D3 bootrom</a>.  The guide utilizes a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. Instead we need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+. With the Odroid N2+, we follow the S905D3 guide to a tee, only using the <code>aml_encrypt_g12b tool</code>, rather than the <code>aml_encrypt_g12b</code> during the build process.
+We take advantage of Frederic's previous article on <a href="https://fredericb.info/2021/02/dump-amlogic-s905d3-bootrom-from-khadas-vim3l-board.html">how to dump the S905D3 bootrom</a>.  The guide utilizes a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. Instead we need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+. With the Odroid N2+, we follow the S905D3 guide to a tee, only using the <code>aml_encrypt_g12b tool</code>, rather than the <code>aml_encrypt_g12b</code> during the build process.  
 
 ##### Build
 The code is built using GNU C cross-compiler for the arm64 architecture (packages gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu on Debian) :
@@ -44,6 +44,33 @@ The code is built using GNU C cross-compiler for the arm64 architecture (package
 Then, the binary is packaged as regular BL2 image for this target using the aml_encrypt_g12a tool from khadas-uboot repository:
 
 <code>sudo ./khadas-uboot/fip/g12b/aml_encrypt_g12b --bl2sig --input ./S922X_dump_bootrom.bin --</code>
+
+### Updating amlogic-usbdl & payloads
+To determine whether S922X was vulnerable we would try to extract the bootrom again using the <code>amlogic-usbdl</code> tool that exploits the bug to execute unverified code by the bootrom.  The code we need to execute is the <code>dump_bootrom_uart_s922x.S</code> payload, with instructions to dump the bootrom code over UART.  Examinging the S922X bootrom extracted from the Odroid N2+ we update the payload with the S922X UART hardward address.
+
+<code>.text
+.global _start
+
+_start:
+	ldr w19, _uart_putc
+    mov w20, 0x10000 // size
+	ldr w21, _addr
+    ldr w22, _watchdog_rst
+_dump:
+    ldrb w0, [x21], #1
+    blr x19
+    subs x20, x20, #1
+    str wzr, [x22]
+    bne _dump
+	ret
+
+_uart_putc: .dword 0xFFFFF25F4      //modified from S905D3 - 0xFFFF32F0
+_addr: .dword 0xFFFF0000
+_watchdog_rst: .dword 0xFFD0F0DC</code>
+
+On our first attempt, we are unable to get any UART output, and the Cube reboots.  The stack buffer pointer address likely needs to be modified for the S922X SOC.  The S922X datasheet released by Hardkernel indicates that the stack buffer range is between <code>0xFFFE3600-0xFFFE3800</code> like the S905D3.  After testing a number of addresses within the stack buffer range without success, we discover that by modifying the <code>bulk_transfer_size</code> in addition to <code>TARGET_RA_PTR</code> we get data over UART from at <code>0xFFFE3678-0xFFFE367B</code>.  Analysis of the UART data confirmed it was the bootrom code, and that S922X was affected by the vulnerability.  The <code>bulk_transfer_size</code> can be decreased to as little as <code>0x6</code>, increasing the maximum payload size to 65530 bytes. We settled on <code>0xFE</code> for the <code>bulk_transfer_size</code> to keep things similar to the S905D3 exploit, and <code>0xFFFE3678</code> for the pointer address.
+
+
 
 
 
