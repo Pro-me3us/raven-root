@@ -8,7 +8,7 @@ This expoit is based on a <a href="https://fredericb.info/2021/02/amlogic-usbdl-
 You are solely responsible for any potential damage(s) caused to your device by this exploit.
 
 # Requirements
-<li>FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3[^1]</li>
+FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3[^1]
 <li>Micro-USB cable</li>
 <li>Device to put Cube into device firmware upgrade (DFU) mode<sup>2</sup></li>
 <li>Linux installation or live-system (Ubuntu 20+ recommended)</li>
