@@ -8,14 +8,14 @@ This expoit is based on a <a href="https://fredericb.info/2021/02/amlogic-usbdl-
 You are solely responsible for any potential damage(s) caused to your device by this exploit.
 
 # Requirements
-FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3[^1]
+<li>FireTV 2nd gen Cube with FireOS version earlier than 7.2.7.3<sup>1</sup></li>
 <li>Micro-USB cable</li>
 <li>Device to put Cube into device firmware upgrade (DFU) mode<sup>2</sup></li>
 <li>Linux installation or live-system (Ubuntu 20+ recommended)</li>
 <li><code>libusb-dev</code> installed</li>
 
 <br>  
-[^1]: <sup>1</sup>In February to March 2022, Amazon began rolling out firmware version 7.2.7.3/2625 which burned efuses to disable USB boot, and bar DFU entry needed by this exploit.  As of May 2022, new 2nd gen Cubes are still shipped with fireware version 7.2.2.9/1856 and can be prevented from updating to the newest firmware during the registration process by following this <a href="https://www.aftvnews.com/how-to-skip-software-updates-during-initial-setup-or-factory-reset-on-a-fire-tv-firestick-or-fire-tv-cube/">guide</a>.<br><br>
+<sup>1</sup>In February to March 2022, Amazon began rolling out firmware version 7.2.7.3/2625 which burned efuses to disable USB boot, and bar DFU entry needed by this exploit.  As of May 2022, new 2nd gen Cubes are still shipped with fireware version 7.2.2.9/1856 and can be prevented from updating to the newest firmware during the registration process by following this <a href="https://www.aftvnews.com/how-to-skip-software-updates-during-initial-setup-or-factory-reset-on-a-fire-tv-firestick-or-fire-tv-cube/">guide</a>.<br><br>
 <sup>2</sup>To put the 2nd gen Cube into device firmware upgrade (DFU) mode we need to pass a 'boot@usb' command, to the Cube's Amlogic s922x SOC, through its I2C bus via the HDMI port.  This was first described in the <a href="https://blog.exploitee.rs/2018/rooting-the-firetv-cube-and-pendant-with-firefu">FireFU</a> exploit for the 1st gen Cube & Pendant.  Since then there are a few more options for devices to accmplish this: 
 
 1) Arduino sketch to boot into DFU, compatible with ARM-based Arduino boards (Due, Teensy, Genuino)<br>
