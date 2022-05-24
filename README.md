@@ -33,8 +33,18 @@ In late 2020 security researcher Frederic Basse discovered a <a href="https://fr
 In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of adapting and replicating Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads that Frederic had written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses.
 
 ### Dumping S922X bootrom
-We take advantage of Frederic's previous article on how to dump an Amlogic bootrom.
-Frederic wrote a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. We instead need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+.
+We take advantage of Frederic's previous article on <a href="https://fredericb.info/2021/02/dump-amlogic-s905d3-bootrom-from-khadas-vim3l-board.html">how to dump the S905D3 bootrom</a>.  The guide utilizes a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. Instead we need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+. With the Odroid N2+, we follow the S905D3 guide to a tee, only using the <code>aml_encrypt_g12b tool</code>, rather than the <code>aml_encrypt_g12b</code> during the build process.
+
+Build
+The code is built using GNU C cross-compiler for the arm64 architecture (packages gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu on Debian) :
+
+<code>sudo aarch64-linux-gnu-gcc -O3 -nostdlib -Wl,--build-id=none -o S922X_dump_bootrom.elf S922X_dump_bootrom.c
+sudo aarch64-linux-gnu-objcopy -O binary -j .text S922X_dump_bootrom.elf S922X_dump_bootrom.bin</code>
+
+Then, the binary is packaged as regular BL2 image for this target using the aml_encrypt_g12a tool from khadas-uboot repository:
+
+<code>sudo ./khadas-uboot/fip/g12b/aml_encrypt_g12b --bl2sig --input ./S905D3_dump_bootrom.bin --</code>
+
 
 
 
