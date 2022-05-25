@@ -70,6 +70,7 @@ _addr: .dword 0xFFFF0000
 _watchdog_rst: .dword 0xFFD0F0DC
 ```
 
+The
 On our first attempt, we are unable to get any UART output, and the Cube reboots.  The stack buffer pointer address likely needs to be modified for the S922X SOC.  The S922X datasheet released by Hardkernel indicates that the stack buffer range is between <code>0xFFFE3600-0xFFFE3800</code> like the S905D3.  After testing a number of addresses within the stack buffer range without success, we discover that by modifying the <code>bulk_transfer_size</code> in addition to <code>TARGET_RA_PTR</code> we get data over UART from at <code>0xFFFE3678-0xFFFE367B</code>.  Analysis of the UART data confirmed it was the bootrom code, and that S922X was affected by the vulnerability.  The <code>bulk_transfer_size</code> can be decreased to as little as <code>0x6</code>, increasing the maximum payload size to 65530 bytes. We settled on <code>0xFE</code> for the <code>bulk_transfer_size</code> to keep things similar to the S905D3 exploit, and <code>0xFFFE3678</code> for the pointer address.
 
 
