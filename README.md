@@ -57,7 +57,7 @@ Next, we had to find an address for the download buffer pointer (<code>TARGET_RA
 ### Bootloader Decryption
 Knowing that the we could replicate the download buffer bug on the Cube, we then needed to get a copy of the Bl2 code to edit for our exploit.  Bl2 is the first 65kb of the bootloader image, so we extracted the signed bootloader from one of the OTA updates.  The signed bootloaders are encrypted, and we would need to decrypt it in order to edit it.  Frederic had previously found an AES-256-CBC key in SRAM 0xFFFE0020 to decrypt the Chromecast bootloader.  We <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/c23b81543c10eb7627b099f5b4767f037a18b8c8">updated the memdump_over_usb.c payload</a> to dump SRAM.  There was no key at 0xFFFE0020 but with further analysis, we found the key further down at <code>0xFFFE7C20</code>.  However, the AES key only decrypted Bl2 & Bl30, and we needed to keep searching for another key.  Making the assumption that the key had to either be in the SOC or the decrypted portion of bootloader, we eventually found three AES keys in Bl30 at <code>0x1061C</code>, <code>0x10A84</code>, and <code>0x10EEC</code> (again at <code>0x11354</code>).  In addition to the three AES keys for the bootloader, we also found a fourth 48 byte string and potential AES-256-CBC key that we were unable to determine the purpose of.
 
-### Creating the a patche Bl2 payload
+### Creating a patched Bl2 payload
 
 
 
