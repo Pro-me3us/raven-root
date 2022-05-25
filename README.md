@@ -30,7 +30,7 @@ https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle<br>
 # Explanation
 In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  Security researchers Jan Altensen (Stricted) and Nolen Johnson (npjohnson) extended on this work, disabling secure boot & anti-rollback checks in the bootloader and release a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast.<br>
 
-In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic to which led me down the path of adapting and replicating Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads that Frederic had written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses.
+In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube.  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I surmised there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen & Frederic which led me down the path of replicating and adapting Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses for the S922X.
 
 ### Dumping S922X bootrom
 We take advantage of Frederic's previous article on <a href="https://fredericb.info/2021/02/dump-amlogic-s905d3-bootrom-from-khadas-vim3l-board.html">how to dump the S905D3 bootrom</a>.  The guide utilizes a small Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. Instead we need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+. With the Odroid N2+, we follow the S905D3 guide to a tee, only using the <code>aml_encrypt_g12b tool</code>, rather than the <code>aml_encrypt_g12b</code> during the build process.  
@@ -46,22 +46,34 @@ Then, the binary is packaged as regular BL2 image for this target using the aml_
 <code>sudo ./khadas-uboot/fip/g12b/aml_encrypt_g12b --bl2sig --input ./S922X_dump_bootrom.bin --</code>
 
 ### Updating amlogic-usbdl & payloads
-To determine whether S922X was vulnerable we would try to extract the bootrom again using the <code>amlogic-usbdl</code> tool that exploits the bug to execute unverified code by the bootrom.  The code we need to execute is the <code>dump_bootrom_uart_s922x.S</code> payload, with instructions to dump the bootrom code over UART.  Examinging the S922X bootrom extracted from the Odroid N2+ we update the payload with the S922X UART hardward address.
+To determine whether the S922X was vulnerable we would next attempt to re-exact the bootrom, only this time using the <code>amlogic-usbdl</code> exploit tool to extract the bootrom.  The unverified code with instructions to dump the bootrom code to UART was in the <code>amlogic-usbdl</code> payload <code>dump_bootrom_uart_s922x.S</code>. First we would need to update the payload written for the S905D3 with the UART hardware address for the S922X.
 
-<code>.text</br>
-.global _start</br>
-<br>
-_start:<br>
+<code>.text
+	
+.global _start
+	
+_start:
+	
 	ldr w19, _uart_putc
+	
     mov w20, 0x10000 // size
+	
 	ldr w21, _addr
+	
     ldr w22, _watchdog_rst
+	
 _dump:
+	
     ldrb w0, [x21], #1
+	
     blr x19
+	
     subs x20, x20, #1
+	
     str wzr, [x22]
+	
     bne _dump
+	
 	ret
 
 _uart_putc: .dword 0xFFFFF25F4      //modified from S905D3 - 0xFFFF32F0
