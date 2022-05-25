@@ -48,9 +48,9 @@ Then, the binary is packaged as regular BL2 image for this target using the aml_
 ### Updating amlogic-usbdl & payloads
 To determine whether the S922X was vulnerable we would next attempt to re-exact the bootrom, only this time using the <code>amlogic-usbdl</code> exploit tool to extract the bootrom.  The unverified code with instructions to dump the bootrom code to UART was in the <code>amlogic-usbdl</code> payload <code>dump_bootrom_uart_s922x.S</code>. First we would need to update the payload written for the S905D3 with the <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/49b360360888de96e81e1dfe206e0864e91d4000">UART hardware address</a> for the S922X:
 
-```
+<code>
 _uart_putc: .dword 0xffff25f4      //s905d3 - 0xffff32f0
-```
+</code>
 
 The
 On our first attempt, we are unable to get any UART output, and the Cube reboots.  The stack buffer pointer address likely needs to be modified for the S922X SOC.  The S922X datasheet released by Hardkernel indicates that the stack buffer range is between <code>0xFFFE3600-0xFFFE3800</code> like the S905D3.  After testing a number of addresses within the stack buffer range without success, we discover that by modifying the <code>bulk_transfer_size</code> in addition to <code>TARGET_RA_PTR</code> we get data over UART from at <code>0xFFFE3678-0xFFFE367B</code>.  Analysis of the UART data confirmed it was the bootrom code, and that S922X was affected by the vulnerability.  The <code>bulk_transfer_size</code> can be decreased to as little as <code>0x6</code>, increasing the maximum payload size to 65530 bytes. We settled on <code>0xFE</code> for the <code>bulk_transfer_size</code> to keep things similar to the S905D3 exploit, and <code>0xFFFE3678</code> for the pointer address.
