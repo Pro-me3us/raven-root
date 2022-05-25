@@ -46,28 +46,10 @@ Then, the binary is packaged as regular BL2 image for this target using the aml_
 <code>sudo ./khadas-uboot/fip/g12b/aml_encrypt_g12b --bl2sig --input ./S922X_dump_bootrom.bin --</code>
 
 ### Updating amlogic-usbdl & payloads
-To determine whether the S922X was vulnerable we would next attempt to re-exact the bootrom, only this time using the <code>amlogic-usbdl</code> exploit tool to extract the bootrom.  The unverified code with instructions to dump the bootrom code to UART was in the <code>amlogic-usbdl</code> payload <code>dump_bootrom_uart_s922x.S</code>. First we would need to update the payload written for the S905D3 with the UART hardware address for the S922X.
+To determine whether the S922X was vulnerable we would next attempt to re-exact the bootrom, only this time using the <code>amlogic-usbdl</code> exploit tool to extract the bootrom.  The unverified code with instructions to dump the bootrom code to UART was in the <code>amlogic-usbdl</code> payload <code>dump_bootrom_uart_s922x.S</code>. First we would need to update the payload written for the S905D3 with the <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/49b360360888de96e81e1dfe206e0864e91d4000">UART hardware address</a> for the S922X:
 
 ```
-.text
-.global _start
-
-_start:
-	ldr w19, _uart_putc
-    mov w20, 0x10000 // size
-	ldr w21, _addr
-    ldr w22, _watchdog_rst
-_dump:
-    ldrb w0, [x21], #1
-    blr x19
-    subs x20, x20, #1
-    str wzr, [x22]
-    bne _dump
-	ret
-
 _uart_putc: .dword 0xffff25f4      //s905d3 - 0xffff32f0
-_addr: .dword 0xFFFF0000
-_watchdog_rst: .dword 0xFFD0F0DC
 ```
 
 The
