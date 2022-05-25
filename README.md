@@ -52,8 +52,9 @@ To determine whether the S922X was vulnerable we would next attempt to re-exact 
 _uart_putc: .dword 0xffff25f4
 </code>
 
+Next, we had to find an address for the download buffer pointer (<code>TARGET_RA_PTR</code>) within the <code>0xFFFE3600-0xFFFE3800</code> stack buffer range that would work with the S922X.  After trying a long list of addresses within the stack buffer without success, we discovered that by modifying the <code>bulk_transfer_size</code> in addition to <code>TARGET_RA_PTR</code> we were finally able to get some UART output.  Analysis of the UART output confirmed it was the bootrom code, confirming that the same USB stack buffer bug was present in the S922X.  The <code>bulk_transfer_size</code> could be decreased to as little as <code>0x6</code>, increasing the maximum payload size to 65530 bytes. We settled on <code>0xFE</code> for the <code>bulk_transfer_size</code> to keep things similar to the S905D3 exploit, and <code>0xFFFE3678</code> for the <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/20d7b89d16360266f7cb182eac709ddd0724dd8f">buffer pointer address</a>.
 
-On our first attempt, we are unable to get any UART output, and the Cube reboots.  The stack buffer pointer address likely needs to be modified for the S922X SOC.  The S922X datasheet released by Hardkernel indicates that the stack buffer range is between <code>0xFFFE3600-0xFFFE3800</code> like the S905D3.  After testing a number of addresses within the stack buffer range without success, we discover that by modifying the <code>bulk_transfer_size</code> in addition to <code>TARGET_RA_PTR</code> we get data over UART from at <code>0xFFFE3678-0xFFFE367B</code>.  Analysis of the UART data confirmed it was the bootrom code, and that S922X was affected by the vulnerability.  The <code>bulk_transfer_size</code> can be decreased to as little as <code>0x6</code>, increasing the maximum payload size to 65530 bytes. We settled on <code>0xFE</code> for the <code>bulk_transfer_size</code> to keep things similar to the S905D3 exploit, and <code>0xFFFE3678</code> for the pointer address.
+  
 
 
 
