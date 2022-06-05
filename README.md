@@ -353,6 +353,7 @@ To automatically be dropped into the U-Boot console remove the following line
 autoboot_command(s);    //comment out to boot to uboot cmdline	
 ```
 
+Having made all our edits to the U-Boot source, we use the Amazon bootloader compilation tool, build_uboot_config.sh.  But this tool will compile the entire bootloader image, and we only want the compiled Bl33 / U-Boot image within, to insert into the signed OTA bootloader we were previously working with.  We need to edit out the cleanup function fuctions the compilation tool, so that we can get a copy of the Bl33 image before it's deleted.  
 
 
 
