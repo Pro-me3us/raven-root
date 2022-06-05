@@ -57,7 +57,55 @@ Next, we had to find an address for the download buffer pointer (<code>TARGET_RA
 ### Bootloader decryption
 Knowing that the we could replicate the download buffer bug on the Cube, we then needed to get a copy of the Bl2 code to edit for our exploit.  Bl2 is the first 65kb of the bootloader image, so we extracted the signed bootloader from one of the OTA updates.  The signed bootloaders are encrypted, and we would need to decrypt it in order to edit it.  Frederic had previously found an AES-256-CBC key in SRAM 0xFFFE0020 to decrypt the Chromecast bootloader.  We <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/c23b81543c10eb7627b099f5b4767f037a18b8c8">updated the memdump_over_usb.c payload</a> to dump SRAM.  There was no key at 0xFFFE0020 but with further analysis, we found the key further down at <code>0xFFFE7C20</code>.  However, the AES key only decrypted Bl2 & Bl30, and we needed to keep searching for another key.  Making the assumption that the key had to either be in the SOC or the decrypted portion of bootloader, we eventually found three AES keys in Bl30 at <code>0x1061C</code>, <code>0x10A84</code>, and <code>0x10EEC</code> (again at <code>0x11354</code>).  In addition to the three AES keys for the bootloader, we also found a fourth 48 byte string and potential AES-256-CBC key that we were unable to determine the purpose of.
 
+
+The OTA updates include two bootloaders, u-boot.bin and u-boot.bin.signed. The unsigned u-boot.bin is also not encrypted, and will not load on a production Cube.  The unsigned bootloader has not been changed since the release of the Cube, and may be specifically for developer units provided by Amazon that don't have the boot verify and boot encrypt efuses burned in the SOC.  The AES key
+
 ### Creating a patched Bl2 payload
+The first 65536 bytes of the bootloader (u-boot.bin.signed) is Bl2, of which the last several hundred bytes being padding added during the signing process. The first 65280 bytes of the bootloader was trimmed from the bootloader, removing some of that padding to fit the 65280 byte payload limit of amlogic-usbdl.
+<code>sudo dd if=u-boot.bin.signed of=bl2.bin bs=1 count=65280 skip=0</code>
+
+The decrypted, trimmed Bl2.bin was then edited in disassembly, patching out a serious of signature checks that verifies the rest of the bootloader.
+
+<code>--- <Bl2.bin>
++++ <Bl2.patched.bin>
+
+-00008de0 60 ca 41 79     ldrh       w0,[x19, #0xe4]=>DAT_0001136c
+-00008de4 01 04 00 51     sub        w1,w0,#0x1
+-00008de8 61 ca 01 79     strh       w1,[x19, #0xe4]=>DAT_0001136c
+-00008dec c0 00 00 34     cbz        w0,LAB_00008e04
+-00008df0 20 00 00 b0     adrp       x0,0xd000
+-00008df4 00 60 2b 91     add        x0=>s_FIP_hdr_check_fail,_retry!_0000dad8,x0,#
+-00008df8 86 0e 00 94     bl         FUN_0000c810
+-00008dfc 20 00 82 52     mov        w0,#0x1001
+-00008e00 16 00 00 14     b          LAB_00008e58      
++00008de0 00 00 80 52     mov        w0,#0x0
++00008de4 1f 20 03 d5     nop
++00008de8 1f 20 03 d5     nop
++00008dec c0 00 00 34     cbz        w0,LAB_00008e04
++00008df0 1f 20 03 d5     nop
++00008df4 1f 20 03 d5     nop
++00008df8 1f 20 03 d5     nop
++00008dfc 1f 20 03 d5     nop
++00008e00 1f 20 03 d5     nop
+       
+-00008ffc 20 00 00 b0     adrp       x0,0xd000
+-00009000 00 dc 2e 91     add        x0=>s_DDR_fip_hdr_check_fail,_retry!_0000dbb7,
+-00009004 03 0e 00 94     bl         FUN_0000c810                                  
+-00009008 a0 00 82 52     mov        w0,#0x1005
+-0000900c 93 ff ff 17     b          LAB_00008e58 
++00008ffc 00 00 80 52     mov        w0,#0x0
++00009000 1f 20 03 d5     nop
++00009004 1f 20 03 d5     nop
++00009008 1f 20 03 d5     nop
++0000900c 1f 20 03 d5     nop
+
+-0000bbcc 9c 02 00 94     bl         FUN_0000c63c
++0000bbcc 00 00 80 52     mov        w0,#0x0</code>
+
+### Patching and Compiling U-Boot
+With the signature checks removed from Bl2.bin, we were now free to make edits to Bl33/U-Boot.  We had two choices for editing U-Boot, either continue to edit the bootloader obtained from the OTA update in disassembly, or use Amazon's GPL library to edit and compile our own U-Boot image and insert that into our bootloader image.  Analyzing the bootloader we find that U-Boot is LZ4 compressed with a custom U-Boot header, and that we couldn't decompress it with a standard LZ4 program. Rather than try to reconstruct a standard header to decompress the U-Boot, we decided to take the easier path and use Amazon's GPL repository to compile our own U-Boot image.
+
+While attempting to use Amazon's bootloader compiler we quickly find out that it's broken.  Testing various versions we determine that <a href="https://fireos-tv-src.s3.amazonaws.com/JnV5RT1byYZhsDAFQ0MuCECV5q/FireTVCubeGen2-7.2.2.9-20201118.tar.bz2">FireTVCubeGen2-7.2.2.9-20201118.tar.bz2</a> is the last version that will fully compile, but because the fastboot boot function is broken, we had to go all the way back to the initial release <a href="https://fireos-tv-src.s3.amazonaws.com/YbHeBIPhSWxBTpng8Y0nLiquDC/FireTVCubeGen2-7.2.0.4-20191004.tar.bz2">FireTVCubeGen2-7.2.0.4-20191004.tar.bz2</a>.
 
 
 
