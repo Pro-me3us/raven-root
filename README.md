@@ -395,9 +395,9 @@ We are now ready to try booting from our modified bootloader.
 Use the exploit to inject our modified Bl2 image, avoiding image verification
 sudo ./amlogic-usbdl bl2.bin
 
-Then we use Amlogic's update tool to load the rest of bootloader
+Then we use Amlogic's update tool to load the later stages Bl30-Bl33
 
-
+sudo ./update bl2_boot bootloader.img.enc
 
 
 
