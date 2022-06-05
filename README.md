@@ -154,7 +154,204 @@ bool amzn_is_command_blocked(const char *cmd)
 }
 ```
 
+Next we removed restrictions on fastboot commands
 
+<amzn_fastboot_lockdown.c original>
+```
+__attribute__((weak)) int is_locked_production_device() {
+-#if defined(UFBL_FEATURE_SECURE_BOOT)
+-	return (AMZN_PRODUCTION_DEVICE == amzn_target_device_type()) && (1 != g_boot_arg->unlocked);
+-#else
+	return 0;
+-#endif
+}
+
+#else /* UFBL_PROJ_ABC */
+
+__attribute__((weak)) int is_locked_production_device() {
+#if defined(UFBL_FEATURE_SECURE_BOOT) && defined(UFBL_FEATURE_UNLOCK)
+	return (AMZN_PRODUCTION_DEVICE == amzn_target_device_type()
+                        && (!amzn_target_is_unlocked())
+#if defined(UFBL_FEATURE_TEMP_UNLOCK)
+                        && (!amzn_target_is_temp_unlocked())
+#endif
+#if defined(UFBL_FEATURE_ONETIME_UNLOCK)
+                        && (!amzn_target_is_onetime_unlocked())
+#endif
+			);
+#else
+	return 0;
+#endif
+}
+
+#endif /* UFBL_PROJ_ABC */
+```
+
+<amzn_fastboot_lockdown.c patched>
+```
+__attribute__((weak)) int is_locked_production_device() {
+    return 0;
+}
+```
+<amzn_fastboot_lockdown.c original>
+```
+	for (i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i) {
+		if (memcmp(buffer, blacklist[i], strlen(blacklist[i])) == 0) {
+			return 1;
+		}
+	}
+
+	amzn_extends_fastboot_blacklist(&list, &length);
+	if (list != NULL && length > 0) {
+		for (i = 0; i < length; ++i) {
+			if (memcmp(buffer, list[i], strlen(list[i])) == 0) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+```
+
+<amzn_fastboot_lockdown.c patched>
+```
+	for (i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i) {
+		if (memcmp(buffer, blacklist[i], strlen(blacklist[i])) == 0) {
+			return 0;
+		}
+	}
+
+	amzn_extends_fastboot_blacklist(&list, &length);
+	if (list != NULL && length > 0) {
+		for (i = 0; i < length; ++i) {
+			if (memcmp(buffer, list[i], strlen(list[i])) == 0) {
+				return 0;
+			}
+		}
+	}
+
+	return 0;
+}
+```
+Next we remove the fastboot flash image verification check
+
+<image_verify.c original>
+``` 
+int
+amzn_image_verify(const void *image,
+		  unsigned char *signature,
+		  unsigned int image_size, meta_data_handler handler)
+{
+	int auth = 0;
+	char *digest = NULL;
+
+	if (!(digest = amzn_plat_alloc(SHA256_DIGEST_LENGTH))) {
+		dprintf(CRITICAL, "ERROR: Unable to allocate image hash\n");
+		goto cleanup;
+	}
+
+	memset(digest, 0, SHA256_DIGEST_LENGTH);
+
+	/*
+	 * Calculate hash of image for comparison
+	 */
+	amzn_target_sha256(image, image_size, digest);
+
+	if (amzn_verify_image(AMZN_PRODUCTION_CERT, digest,
+					signature, handler)) {
+		if (amzn_target_device_type() == AMZN_PRODUCTION_DEVICE) {
+			dprintf(ALWAYS,
+				"Image FAILED AUTHENTICATION on PRODUCTION device\n");
+			/* Failed verification */
+			goto cleanup;
+		} else {
+		        dprintf(ALWAYS,
+				"Authentication failed on engineering device with production certificate\n");
+		}
+
+		if (amzn_target_device_type() != AMZN_ENGINEERING_DEVICE) {
+			dprintf(ALWAYS,
+				"%s: Unknown device type!\n", UFBL_STR(__FUNCTION__));
+			goto cleanup;
+		}
+
+		/* Engineering device */
+		if (amzn_verify_image(AMZN_ENGINEERING_CERT, digest,
+					signature, handler)) {
+			dprintf(ALWAYS,
+				"Image FAILED AUTHENTICATION on ENGINEERING device\n");
+			goto cleanup;
+		}
+	} else {
+		dprintf(ALWAYS,
+			"Image AUTHENTICATED with PRODUCTION certificate\n");
+	}
+
+	auth = 1;
+
+cleanup:
+	if (digest)
+		amzn_plat_free(digest);
+
+	return auth;
+}
+```
+
+<image_verify.c patched>
+```
+int
+amzn_image_verify(const void *image,
+          unsigned char *signature,
+          unsigned int image_size, meta_data_handler handler)
+{
+    return 1;
+}
+```
+
+We edit secure_boot.c to identify our Cube as an engineering device.  This is a redundancy that should cover any restrictions we may have missed.
+Make Cube an engineering device for more privlages
+<secure_boot.c original>
+```
+Original
+int amzn_target_device_type(void)
+{
+	/* Is anti-rollback enabled? */
+	if (query_efuse_status("ARB") == 1)
+		return AMZN_PRODUCTION_DEVICE;
+	else
+		return AMZN_ENGINEERING_DEVICE;
+}
+```
+
+<secure_boot.c original>
+```
+int amzn_target_device_type(void)
+{
+	/* Is anti-rollback enabled? */
+	if (query_efuse_status("ARB") == 1)
+		return AMZN_ENGINEERING_DEVICE;
+	else
+		return AMZN_ENGINEERING_DEVICE;
+}
+```
+Lastly we edit main.c to boot us into our desired boot mode (fastboot, update / Amlogic burn mode, U-Boot console)
+Patch to boot us into the desired mode
+<main.c patched>
+add to line 147 to boot to fastboot
+```
+	run_command("fastboot", 0); 
+	run_preboot_environment_command();
+```
+add to line 147 to boot to fastboot
+```
+	run_command("update", 0); 
+	run_preboot_environment_command();
+```
+To automatically be dropped into the U-Boot console remove the following line
+```	
+autoboot_command(s);    //comment out to boot to uboot cmdline	
+```
 
 
 
