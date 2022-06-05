@@ -353,7 +353,54 @@ To automatically be dropped into the U-Boot console remove the following line
 autoboot_command(s);    //comment out to boot to uboot cmdline	
 ```
 
-Having made all our edits to the U-Boot source, we use the Amazon bootloader compilation tool, build_uboot_config.sh.  But this tool will compile the entire bootloader image, and we only want the compiled Bl33 / U-Boot image within, to insert into the signed OTA bootloader we were previously working with.  We need to edit out the cleanup function fuctions the compilation tool, so that we can get a copy of the Bl33 image before it's deleted.  
+Having made all our edits to the U-Boot source, we use the Amazon bootloader compilation tool, build_uboot.sh.  But this tool will compile the entire bootloader image, and we only want the compiled Bl33 / U-Boot image within, to insert into the signed OTA bootloader we were previously working with.  We need to edit out the clean-up fuctions from the compilation tool, so that we can get a copy of the Bl33 image before it's deleted.
+ 
+This deletes the working directory where all the files are being compiled.  We edit out the rm on completion command
+<build_uboot.sh> delete line 48
+-trap "rm -rf $WORKSPACE_DIR" EXIT
+
+remove clean function that deletes all the bootloader component images
+<bootable/bootloader/uboot-amlogic/s922x/fip/mk_script.sh>
+-	cd ${UBOOT_SRC_FOLDER}
+-	make distclean
+-	cd ${MAIN_FOLDER}
+-	rm ${FIP_BUILD_FOLDER} -rf
+-	rm ${BUILD_FOLDER}/* -rf
+
+Now we call the build script to create the bootloader
+sudo ./build_uboot.sh platform-7204-20191004.tar bootloader_output_folder
+
+On completion we find the working folder where all the temporary files are stored:
+tmp/tmp.randomstring/src/bootable/bootloader/uboot-amlogic/s922x/fip/_tmp/
+
+bl33.bin.enc is our compiled u-boot image.  We now merge that into the signed bootloader, overwriting the the old U-Boot.
+
+1) Decrypt the Bl33 portion of the signed bootloader
+sudo openssl enc -aes-256-cbc -nopad -d -K 0000000000000000000000000000000000000000000000000000000000000000 -iv 00000000000000000000000000000000 -in u-boot.bin.signed -out bootloader.img
+
+2) We now line up our Bl33 image (bl33.bin.enc) and partially decrypted bootloader (bootloader.img) using the LZ4C magic to identify the beginning of the compressed U-boot image.
+IN_OFFSET=`grep --byte-offset --only-matching --text LZ4C bl33.bin.enc | head -1 | cut -d: -f1`
+OUT_OFFSET=`grep --byte-offset --only-matching --text LZ4C bootloader.img | head -1 | cut -d: -f1`
+
+3) Bl33.bin.enc is merged into bootloader.img
+sudo dd if=bl33.bin.enc of=bootloader.img skip=$IN_OFFSET seek=$OUT_OFFSET bs=1 conv=notrunc
+
+4) Lastly, we re-encrypt the the end of bootloader.img
+sudo openssl enc -aes-256-cbc -nopad -e -K 0000000000000000000000000000000000000000000000000000000000000000 -iv 00000000000000000000000000000000 -in bootloader.img -out bootloader.img.enc
+
+
+### Booting the modified bootloader
+We are now ready to try booting from our modified bootloader. 
+
+Use the exploit to inject our modified Bl2 image, avoiding image verification
+sudo ./amlogic-usbdl bl2.bin
+
+Then we use Amlogic's update tool to load the rest of bootloader
+
+
+
+
+
 
 
 
