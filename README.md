@@ -65,8 +65,8 @@ The first 65536 bytes of the bootloader (u-boot.bin.signed) is Bl2, of which the
 <code>sudo dd if=u-boot.bin.signed of=bl2.bin bs=1 count=65280 skip=0</code>
 
 The decrypted, trimmed Bl2.bin was then edited in disassembly, patching out a serious of signature checks that verifies the rest of the bootloader.
-
-<code>--- <Bl2.bin>
+```
+--- <Bl2.bin>
 +++ <Bl2.patched.bin>
 
 -00008de0 60 ca 41 79     ldrh       w0,[x19, #0xe4]=>DAT_0001136c
@@ -100,7 +100,8 @@ The decrypted, trimmed Bl2.bin was then edited in disassembly, patching out a se
 +0000900c 1f 20 03 d5     nop
 
 -0000bbcc 9c 02 00 94     bl         FUN_0000c63c
-+0000bbcc 00 00 80 52     mov        w0,#0x0</code>
++0000bbcc 00 00 80 52     mov        w0,#0x0
+```
 
 ### Patching and Compiling U-Boot
 With the signature checks removed from Bl2.bin, we were now free to make edits to Bl33/U-Boot.  We had two choices for editing U-Boot, either continue to edit the bootloader obtained from the OTA update in disassembly, or use Amazon's GPL library to edit and compile our own U-Boot image and insert that into our bootloader image.  Analyzing the bootloader we find that U-Boot is LZ4 compressed with a custom U-Boot header, and that we couldn't decompress it with a standard LZ4 program. Rather than try to reconstruct a standard header to decompress the U-Boot, we decided to take the easier path and use Amazon's GPL repository to compile our own U-Boot image.
