@@ -65,10 +65,10 @@ The first 65536 bytes of the bootloader (u-boot.bin.signed) is Bl2, of which the
 <code>sudo dd if=u-boot.bin.signed of=bl2.bin bs=1 count=65280 skip=0</code>
 
 The decrypted, trimmed Bl2.bin was then edited in disassembly, patching out a serious of signature checks that verifies the rest of the bootloader.
-```
+
 --- <Bl2.bin>
 +++ <Bl2.patched.bin>
-
+```
 -00008de0 60 ca 41 79     ldrh       w0,[x19, #0xe4]=>DAT_0001136c
 -00008de4 01 04 00 51     sub        w1,w0,#0x1
 -00008de8 61 ca 01 79     strh       w1,[x19, #0xe4]=>DAT_0001136c
@@ -106,8 +106,53 @@ The decrypted, trimmed Bl2.bin was then edited in disassembly, patching out a se
 ### Patching and Compiling U-Boot
 With the signature checks removed from Bl2.bin, we were now free to make edits to Bl33/U-Boot.  We had two choices for editing U-Boot, either continue to edit the bootloader obtained from the OTA update in disassembly, or use Amazon's GPL library to edit and compile our own U-Boot image and insert that into our bootloader image.  Analyzing the bootloader we find that U-Boot is LZ4 compressed with a custom U-Boot header, and that we couldn't decompress it with a standard LZ4 program. Rather than try to reconstruct a standard header to decompress the U-Boot, we decided to take the easier path and use Amazon's GPL repository to compile our own U-Boot image.
 
-While attempting to use Amazon's bootloader compiler we quickly find out that it's broken.  Testing various versions we determine that <a href="https://fireos-tv-src.s3.amazonaws.com/JnV5RT1byYZhsDAFQ0MuCECV5q/FireTVCubeGen2-7.2.2.9-20201118.tar.bz2">FireTVCubeGen2-7.2.2.9-20201118.tar.bz2</a> is the last version that will fully compile, but because the fastboot boot function is broken, we had to go all the way back to the initial release <a href="https://fireos-tv-src.s3.amazonaws.com/YbHeBIPhSWxBTpng8Y0nLiquDC/FireTVCubeGen2-7.2.0.4-20191004.tar.bz2">FireTVCubeGen2-7.2.0.4-20191004.tar.bz2</a>.
+While attempting to use Amazon's bootloader compiler we quickly find out that it's broken.  Testing various versions we determine that <a href="https://fireos-tv-src.s3.amazonaws.com/JnV5RT1byYZhsDAFQ0MuCECV5q/FireTVCubeGen2-7.2.2.9-20201118.tar.bz2">FireTVCubeGen2-7.2.2.9-20201118.tar.bz2</a> is the last version that will fully compile, but because the fastboot boot function is broken, we had to go all the way back to the release build <a href="https://fireos-tv-src.s3.amazonaws.com/YbHeBIPhSWxBTpng8Y0nLiquDC/FireTVCubeGen2-7.2.0.4-20191004.tar.bz2">FireTVCubeGen2-7.2.0.4-20191004.tar.bz2</a>.
 
+The 2nd Gen Cube is shipped with an unlocked bootloader, and it's an Amazon security layer that applies user restrictions.  We began by removing the restrictions on the U-Boot console applied by amzn_lockdown.c
+
+
+--- <amzn_lockdown.c orginal>
+```
+bool amzn_is_command_blocked(const char *cmd)
+{
+-	int i = 0, found = 0;
+-
+-	/* Are we in lock down? */
+-	if (lockdown_commands == false)
+-		return false;
+-
+-	/* Is this an engineering device? */
+-	if (amzn_target_device_type() == AMZN_ENGINEERING_DEVICE)
+-		return false;
+-
+-	/* Are we un-locked? */
+-	if (amzn_target_is_unlocked())
+-		return false;
+-
+-	if (amzn_target_is_onetime_unlocked())
+-		return false;
+-
+-	/* If command is on the white-list, allow */
+-	for (i = 0; i < ARRAY_SIZE(whitelisted_commands); i++)
+-		if (strcmp(whitelisted_commands[i], cmd) == 0)
+-			found = 1;
+-
+-	/* Not on the white-list? Block */
+-	if (!found)
+-		return true;
+-
+	return false;
+}
+```
+
+<amzn_lockdown.c patched>
+//moved to top, line 17
+```
+bool amzn_is_command_blocked(const char *cmd)
+{
+	return false;
+}
+```
 
 
 
