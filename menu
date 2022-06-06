@@ -1,0 +1,319 @@
+#!/bin/bash
+# Ravin boot script
+
+PS3= 
+	echo '      ___         ___                    ___         ___     '
+	echo '     /  /\       /  /\       ___        /  /\       /  /\    '
+	echo '    /  /::\     /  /::\     /  /\      /  /::\     /  /::|   '
+	echo '   /  /:/\:\   /  /:/\:\   /  /:/     /  /:/\:\   /  /:|:|   '
+	echo '  /  /::\ \:\ /  /::\ \:\ /  /:/     /  /::\ \:\ /  /:/|:|__ '
+	echo ' /__/:/\:\_\:/__/:/\:\_\:/__/:/  ___/__/:/\:\ \:/__/:/ |:| /\'
+	echo ' \__\/~|::\/:\__\/  \:\/:|  |:| /  /\  \:\ \:\_\\__\/  |:|/:/'
+	echo '    |  |:|::/     \__\::/|  |:|/  /:/\  \:\ \:\     |  |:/:/ '
+	echo '    |  |:|\/      /  /:/ |__|:|__/:/  \  \:\_\/     |__|::/  '
+	echo '    |__|:|~      /__/:/   \__\::::/    \  \:\       /__/:/   '
+	echo '     \__\|       \__\/        ~~~~      \__\/       \__\/    '
+	echo ''
+	echo 'Please enter your choice: '
+                                                                                         
+options=(	"FireOS boot with ADB root and SElinux=permissive"
+		"FireOS boot with Magisk support"
+		"TWRP Recovery" 
+		"Fastboot mode"
+		"Amlogic burn mode" 
+		"Download partitions with Amlogic burn mode"		
+		"Boot alternative OS from USB drive"
+		"U-boot console (UART connection)" 
+		"Boot Cube's native FireOS from bootloader exploit"
+		"Quit")
+
+sub1_options=(	"USB device mode - keep computer connected"
+		"USB host mode - connect peripherals to Cube"
+		"Quit")
+		
+sub2_options=(	"USB device mode - keep computer connected"
+		"USB host mode - connect peripherals to Cube"
+		"Quit")
+		
+sub3_options=(	"USB device mode - MTP/ADB root access"
+		"USB host mode - connect mouse to Cube to navigate TWRP interface"
+		"Quit")
+
+sub4_options=(	"bootloader"
+		"boot"
+		"Quit")	
+
+COLUMNS=12		
+select opt in "${options[@]}"
+do
+    case $opt in
+
+	"FireOS boot with ADB root and SElinux=permissive")
+	while true
+		do
+		echo ' '
+		echo 'Choose USB configuration for Cube'
+			select opt in "${sub1_options[@]}"
+			do
+    				case $opt in
+    					"USB device mode - keep computer connected")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 && 
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot oem flags fos: 0x87 && sleep 0.1 &&
+					fastboot oem flags dev: 0x64 && sleep 0.1 &&
+					fastboot boot images/boot.img -c "rootfstype=ext4 ro rootwait skip_initramfs OTG_mode=DEVICE androidboot.selinux=permissive";
+					break 10
+					;;
+					"USB host mode - connect peripherals to Cube")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 && 
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot oem flags fos: 0x87 && sleep 0.1 &&
+					fastboot oem flags dev: 0x64 && sleep 0.1 &&
+					fastboot boot images/boot.img -c "rootfstype=ext4 ro rootwait skip_initramfs OTG_mode=HOST androidboot.selinux=permissive";
+					break
+					;;
+					"Quit")
+					break 10
+					;;
+					*) echo "invalid option $REPLY";;
+				esac
+			done
+		done
+		;;
+
+	"FireOS boot with Magisk support")
+	while true
+		do
+		echo ' '
+		echo 'Choose USB configuration for Cube'
+			select opt in "${sub2_options[@]}"
+			do
+    				case $opt in
+					"USB device mode - keep computer connected")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot boot images/magisk_boot.img -c "OTG_mode=DEVICE";
+					break 10
+					;;
+					"USB host mode - connect peripherals to Cube")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot boot images/magisk_boot.img -c "OTG_mode=HOST";
+					break 10
+					;;
+					"Quit")
+					break 10
+					;;
+					*) echo "invalid option $REPLY";;
+				esac
+			done
+		done
+		;;			
+
+	"TWRP Recovery")
+	while true
+		do
+		echo ' '
+		echo 'Choose USB configuration for Cube'
+			select opt in "${sub3_options[@]}"
+			do
+    				case $opt in
+					"USB device mode - MTP/ADB root access")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot boot images/twrp.img -c "OTG_mode=DEVICE";
+					break 10
+					;;
+					"USB host mode - connect mouse to Cube to navigate TWRP interface")
+					./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+					./update bl2_boot bootloader/bootloader.fastboot.img && sleep 0.1 &&
+					fastboot boot images/twrp.img -c "OTG_mode=HOST";
+					break 10
+					;;
+					"Quit")
+					break 10
+					;;
+					*) echo "invalid option $REPLY";;
+				esac	
+			done
+		done
+		;;
+		
+	"Fastboot mode")
+		./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+		./update bl2_boot bootloader/bootloader.fastboot.img;
+		break
+		;;	
+	"Amlogic burn mode")
+		./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+		./update bl2_boot bootloader/bootloader.aml_burn_mode.img;
+		break
+		;;	
+	
+	"Download partitions with Amlogic burn mode")
+		choice () {
+		   local choice=$1
+		   if [[ ${opts[choice]} ]] # toggle
+		   then
+		      opts[choice]=
+		   else
+		      opts[choice]=+
+		   fi
+		}
+
+		PS3='Choose paritions to download (type number to select/unselect): '
+		while :
+		clear
+		do
+		   options=(	"Bootloader [4MB] ${opts[1]}"
+		   		"Reserved [16KB] ${opts[2]}"
+		   		"Tee [8MB] ${opts[3]}"
+		   		"Boot [24MB] ${opts[4]}"
+		   		"Recovery [24MB] ${opts[5]}"
+		   		"Logo [4MB] ${opts[6]}"
+		   		"Misc [1MB] ${opts[7]}"
+		   		"Vendor [157MB] ${opts[8]}"
+		   		"ODM [2MB] ${opts[9]}"
+		   		"System [1,677MB] ${opts[10]}"
+		   		"Product [2MB] ${opts[11]}"
+		   		"Cache [537MB] ${opts[12]}"
+		   		"Data [13,260MB] ${opts[13]}"
+		   		"Begin download")
+		   COLUMNS=12
+		   select opt in "${options[@]}"
+		   do
+		      case $opt in
+		         "Bootloader [4MB] ${opts[1]}")
+		            choice 1
+		            break
+		            ;;
+		         "Reserved [16KB] ${opts[2]}")
+		            choice 2
+		            break
+		            ;;
+		         "Tee [8MB] ${opts[3]}")
+		            choice 3
+		            break
+		            ;;
+		         "Boot [24MB] ${opts[4]}")
+		            choice 4
+		            break
+		            ;;
+		         "Recovery [24MB] ${opts[5]}")
+		            choice 5
+		            break
+		            ;;		            
+		         "Logo [4MB] ${opts[6]}")
+		            choice 6
+		            break
+		            ;;
+		         "Misc [1MB] ${opts[7]}")
+		            choice 7
+		            break
+		            ;;
+		         "Vendor [157MB] ${opts[8]}")
+		            choice 8
+		            break
+		            ;;		            
+		         "ODM [2MB] ${opts[9]}")
+		            choice 9
+		            break
+		            ;;
+		         "System [1,677MB] ${opts[10]}")
+		            choice 10
+		            break
+		            ;;		            
+		         "Product [2MB] ${opts[11]}")
+		            choice 11
+		            break
+		            ;;		            
+		         "Cache [537MB] ${opts[12]}")
+		            choice 12
+		            break
+		            ;;
+		         "Data [13,260MB] ${opts[13]}")
+		            choice 13
+		            break
+		            ;;			            			            
+		         "Begin download")
+		            break 2
+		            ;;
+		         *) printf '%s\n' 'invalid option';;
+		      esac
+		   done
+		done
+		
+		./amlogic-usbdl bootloader/bl2.bin 
+		sleep 1
+		./update bl2_boot bootloader/bootloader.aml_burn_mode.img
+		sleep 5   
+		
+		if [[ ${opts[1]} ]]; then
+		   ./update mread store bootloader normal 0x000400000 backups/bootloader.img;
+		fi   		
+		if [[ ${opts[2]} ]]; then
+		   ./update mread store reserved normal   0x000004000 backups/reserved.img
+		fi   
+		if [[ ${opts[3]} ]]; then
+		   ./update mread store tee normal        0x000800000 backups/tee.img 
+		fi     
+		if [[ ${opts[4]} ]]; then
+		   ./update mread store boot normal       0x001800000 backups/boot.img 
+		fi     
+		if [[ ${opts[5]} ]]; then
+		   ./update mread store recovery normal   0x001800000 backups/recovery.img 
+		fi     
+		if [[ ${opts[6]} ]]; then
+		   ./update mread store logo normal       0x000400000 backups/logo.img 
+		fi     
+		if [[ ${opts[7]} ]]; then
+		   ./update mread store misc normal       0x000100000 backups/misc.img
+		fi     
+		if [[ ${opts[8]} ]]; then
+		   ./update mread store vendor normal     0x009600000 backups/vendor.img
+		fi     
+		if [[ ${opts[9]} ]]; then
+		   ./update mread store odm normal        0x000200000 backups/odm.img
+		fi     
+		if [[ ${opts[10]} ]]; then
+		   ./update mread store system normal     0x064000000 backups/system.img
+		fi     
+		if [[ ${opts[11]} ]]; then
+		   ./update mread store product normal    0x000200000 backups/product.img
+		fi     
+		if [[ ${opts[12]} ]]; then
+		   ./update mread store cache normal      0x020000000 backups/cache.img
+		fi     
+		if [[ ${opts[13]} ]]; then
+		   ./update mread store data normal       0x316600000 backups/data.img  
+		fi	
+		break
+		;; 
+	
+	"U-boot console (UART connection)")
+		./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 && 
+		./update bl2_boot bootloader/bootloader.uboot_console.img;
+       	break
+		;;
+	"Boot alternative OS from USB drive")
+		./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+		./update bl2_boot bootloader/bootloader.usb_boot.img;
+		break
+		;;
+	"Boot Cube's native FireOS from bootloader exploit")
+		./amlogic-usbdl bootloader/bl2.bin && sleep 0.1 &&
+		./update bl2_boot bootloader/bootloader.fireos_permissive.img;
+		break
+		;;
+
+	"Fastboot mode")
+            	echo "you chose choice $REPLY which is $opt"
+            	;;
+
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
