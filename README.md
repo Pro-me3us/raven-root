@@ -61,9 +61,11 @@ Knowing that the download buffer bug is replicable on the Cube, we obtain the Cu
 
 The signed bootloaders are encrypted, and we need to decrypt it in order to make any edits.  Frederic had previously found an AES-256-CBC key in SRAM <code>0xFFFE0020</code> to decrypt the Chromecast bootloader.  To check this address on the Cube, we <a href="https://github.com/Pro-me3us/amlogic-usbdl_S922X/commit/c23b81543c10eb7627b099f5b4767f037a18b8c8">update the memdump_over_usb.c payload</a> to dump SRAM.  There is no key at <code>0xFFFE0020</code> but with further analysis a key is discovered further down at <code>0xFFFE7C20</code>!  Surprisingly, the AES key only decrypts Bl2 & Bl30, and we needed to keep searching for another key to decrypt the rest of the bootloader.  Making the assumption that the key has to either be in the SOC or the decrypted portion of bootloader, three more AES keys are discovered in the decrypted Bl30 code at <code>0x1061C</code>, <code>0x10A84</code>, and <code>0x10EEC</code> (again at <code>0x11354</code>) that  each decrypt a different segment of the signed bootloader.  In addition to the three AES keys, we also find a fourth 48 byte string and potential AES-256-CBC key that we were unable to determine the purpose of.
 
-AES key locations for decrypting the bootloader<br>
+AES key locations for decrypting the bootloader<br><br>
+
 [SRAM]<br>
-1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br>
+1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br><br>
+
 [Bootloader Bl30]<br>
 2) <code>0x1061C</code><br>
 3) <code>0x10A84</code><br>
