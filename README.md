@@ -48,7 +48,7 @@ https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle<br>
 
 To switch boot modes, repeat steps 3-7.
 
-For bash menu option 3) booting with Magisk support, install the Magisk Manager APK (v24.3+ recommended) from within FireOS. https://github.com/topjohnwu/Magisk/releases, ignore the notice about required additional steps.
+For bash menu option '3) booting with Magisk support', install the Magisk Manager APK (v24.3+ recommended) from within FireOS. https://github.com/topjohnwu/Magisk/releases, ignore the notice about required additional steps.
 
 **IMPORTANT:** This exploit is non-persistent and will require reconnecting your computer after a reboot. The exploit is run entirely in memory, and will not modify your Cube. **DO NOT FLASH ANY MODIFIED IMAGES, OR INSTALL MAGISK THROUGH TWRP!** This will cause an authentication error / soft brick when rebooting without the exploit present.<br><br><br><br><br>
 
@@ -92,7 +92,7 @@ The signed bootloaders are encrypted, and we need to decrypt it in order to make
 AES key locations for decrypting the bootloader<br><br>
 
 [SRAM]<br>
-1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br><br>
+1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br>
 
 [Bootloader Bl30]<br>
 2) <code>0x1061C</code><br>
