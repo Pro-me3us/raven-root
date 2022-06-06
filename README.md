@@ -29,22 +29,32 @@ https://github.com/tchebb/amlogic-hdmiboot-avr
 https://github.com/superna9999/linux/wiki/Amlogic-HDMI-Boot-Dongle<br>
 
 
-# Instructions on running this exploit
+# Instructions
 1) Download and unzip this repository. Unzip the images file into the "raven_boot/images" folder that corresponds to your Cube FireOS version:<br>
     "images_7242-2906.zip" for FireOS 7242/2906+<br>
     "images_7212-1333.zip" for any version earlier than 7242/2906<br>
 
 2) Power off the Cube
+
 3) Connect the HDMI dongle / board (DFU entry device) to the Cube's HDMI port, and computer to the Cube's micro-USB port.
+
 4) Power on the Cube, type 'lsusb' in the terminal. Confirm 'ID 1b8e:c003 Amlogic, Inc.' is listed, indicating the Cube is in DFU mode.
+
 5) Reconnect the Cube and TV with HDMI cable.
+
 6) Type 'bash menu' in the terminal, and choose your boot mode.
+
+
 
 To switch boot modes, repeat steps 3-7.
 
 For bash menu option 3) booting with Magisk support, install the Magisk Manager APK (v24.3+ recommended) from within FireOS. https://github.com/topjohnwu/Magisk/releases, ignore the notice about required additional steps.
 
 IMPORTANT: This exploit is non-persistent and will require reconnecting your computer after a reboot. The exploit is run entirely in memory, and will not modify your Cube. DO NOT FLASH ANY MODIFIED IMAGES, OR INSTALL MAGISK through TWRP! This will cause an authentication error / soft brick when rebooting without the exploit present.
+
+
+
+
 
 # Explanation
 In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  Jan Altensen (Stricted) and Nolen Johnson (npjohnson) later extended on this work, releasing a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast.<br>
