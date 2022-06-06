@@ -92,12 +92,12 @@ The signed bootloaders are encrypted, and we need to decrypt it in order to make
 AES key locations for decrypting the bootloader<br><br>
 
 [SRAM]<br>
-1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br>
+    1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br><br>
 [Bootloader Bl30]<br>
-2) <code>0x1061C</code><br>
-3) <code>0x10A84</code><br>
-4) <code>0x10EEC</code> and <code>0x11354</code><br>
-5) <code>0x101b4</code> unknown 48byte value, potential 5th AES key<br>
+    2) <code>0x1061C</code><br>
+    3) <code>0x10A84</code><br>
+    4) <code>0x10EEC</code> and <code>0x11354</code><br>
+    5) <code>0x101b4</code> unknown 48byte value, potential 5th AES key<br>
 
 
 ### Creating a patched Bl2 payload
