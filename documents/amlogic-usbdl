@@ -1,0 +1,27 @@
+The included Amlogic-usbdl and payloads are modified to work with Amlogic's s922x SOC. The original version can be found here:
+https://github.com/frederic/amlogic-usbdl
+
+
+amlogic-usbdl : unsigned code loader for Amlogic bootrom
+Disclaimer
+
+You will be solely responsible for any damage caused to your hardware/software/warranty/data/cat/etc...
+Description
+
+Amlogic bootrom supports booting from USB. This method of boot requires an USB host to send a signed bootloader to the bootrom via USB port.
+
+This tool exploits a vulnerability in the USB download mode to load and run unsigned code in Secure World.
+Tested with
+
+	Odroid N2+ (s922x)
+	FireTV 2nd gen Cube (s922x)
+
+Usage
+
+./amlogic-usbdl <input_file> [<output_file>]
+	input_file: payload binary to load and execute (max size 65282 bytes)
+	output_file: file to write data returned by payload
+
+Payloads
+
+Payloads are raw binary AArch64 executables. Some are provided in directory payloads/.

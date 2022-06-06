@@ -1,0 +1,982 @@
+Printout of Raven U-Boot commands (help menu)
+ 
+?       - alias for 'help'
+aml_sysrecovery - Burning with amlogic format package from partition sysrecovery
+	Usage:
+	--@needVerify: 0 then skip to verify the partition even have verify file.
+	--@checkWholeImgBeforeBurn: 1 then crc32 check the burn package in partition
+	   sysrecovery before actual burn
+	   eg:'aml_sysrecovery 0': burn from partition aml_sysrecovery without verify  
+
+amlmmc  - AMLMMC sub system
+	Usage:
+	amlmmc read  <partition_name> ram_addr addr_byte# cnt_byte
+	amlmmc write <partition_name> ram_addr addr_byte# cnt_byte
+	amlmmc erase <partition_name> addr_byte# cnt_byte
+	amlmmc erase <partition_name>/<device num>
+	amlmmc rescan <device_num>
+	amlmmc part <device_num> - show partition infomation of mmc
+	amlmmc list - lists available devices
+	amlmmc env -  display env partition offset
+	amlmmc switch <device_num> <part name> - part name : boot0, boot1, user
+	amlmmc status <device_num> - read sd/emmc device status
+	amlmmc ext_csd <device_num> <byte> - read sd/emmc device EXT_CSD [byte]
+	amlmmc ext_csd <device_num> <byte> <value> - write sd/emmc device EXT_CSD [byte] value
+	amlmmc response <device_num> - read sd/emmc last command response
+	amlmmc controller <device_num> - read sd/emmc controller register
+	amlmmc write_protect <partition_name> <write_protect_type>
+	   - set write protect on partition through power_on or temporary
+	amlmmc write_protect <addr_base16> <cnt_base10> <write_protect_type>
+	   - set write protect on specified address through power_on or temporary
+	amlmmc send_wp_status <partition_name> send protect status of partition
+	amlmmc send_wp_status <addr_base16> <cnt_base10> send protect status on specified address
+	amlmmc send_wp_type <partition_name> send protect type of partition
+	amlmmc send_wp_type <addr_base16> <cnt_base10> send protect type on specified address
+	amlmmc clear_wp <partition_name> clear write protect of partition
+	amlmmc clear_wp <addr_base16> <cnt_base10> clear write protect on specified addresst
+	amlmmc ds <dev_num> <val> set driver strength
+	amlmmc key - disprotect key partition
+
+amlnf   - aml mtd nand sub-system
+	Usage:
+	amlnf amlnf bl2_info    - show bl2 infos
+	amlnf bl2_erase [cpy]   - erase bl2 area, erase all without cpy!
+	amlnf bl2_read addr cpy size    - read bl2 by cpy.
+	amlnf bl2_write addr [cpy] size - write bl2.
+	   [cpy] copy to operate
+        wirte all copies if without cpy
+	amlnf fip_info  - show fip infos
+	amlnf fip_read addr off size    - read fip.
+	amlnf fip_write addr [off] size - write fip.
+           [off] inside offset
+	   wirte all copies if without off
+	amlnf fip_erase [cpy]   - erase fip area, erase all without cpy!
+	amlnf dtb_read/write addr size  - read/write dtd.
+	amlnf dtb_erase    - erase dtb area!
+	amlnf key_read/write addr size  - read/write keys.
+	amlnf key_erase    - erase keys!
+
+autoscr - run script from memory
+	## Executing script at 01000000
+	No FIT subimage unit name
+
+base    - print or set address offset
+	Base Address: 0x00000000
+	
+bcb     - bcb
+	Usage:
+	bcb 
+	This command will run some commands which saved in misc
+	partition by mark to decide whether execute command!
+	Command format:
+	   bcb bcb_mark
+	Example:
+	/dev/block/misc partiton is saved some contents:
+	uboot-command
+	N/A
+	setenv aa 11;setenv bb 22;setenv cc 33;saveenv;
+	So you can execute command: bcb uboot-command
+	
+bmp     - manipulate BMP image data
+	Usage:
+	bmp info <imageAddr>              - display image info
+	bmp display <imageAddr> [x y]     - display image at x,y
+	bmp scale [imageAddr scaleAddr]   - scale image
+
+boot_cooling - cpu temp-system
+	pll tsensor avg: 0x1eb1, u_efuse: 0x8135
+	temp1: 24
+	ddr tsensor avg: 0x1ecc, u_efuse: 0x80ed
+	temp2: 26
+	device cool done
+booti   - boot arm64 Linux Image image from memory
+	[rsvmem] no check for rsvmem, should check int kernel
+	Bad Linux ARM64 Image magic!
+
+bootm   - boot application image from memory
+Usage:
+	bootm [addr [arg ...]]
+	- boot application image stored in memory
+	   passing arguments 'arg ...'; when booting a Linux kernel,
+	   'arg' can be the address of an initrd image
+	   When booting a Linux kernel which requires a flat device-tree
+	   a third argument is required which is the address of the
+	   device-tree blob. To boot that kernel without an initrd image,
+	   use a '-' for the second argument. If you do not pass a third
+	   a bd_info struct will be passed instead
+
+ 	For the new multi component uImage format (FIT) addresses
+	   must be extened to include component or configuration unit name:
+	   addr:<subimg_uname> - direct component image specification
+	   addr#<conf_uname>   - configuration specification
+	   Use iminfo command to get the list of existing component
+	   images and configurations.
+
+	Sub-commands to do part of the bootm sequence.  The sub-commands must be
+	   issued in the order below (it's ok to not issue all sub-commands):
+           start [addr [arg ...]]
+           loados  - load OS image
+           ramdisk - relocate initrd, set env initrd_start/initrd_end
+           fdt     - relocate flat device tree
+           cmdline - OS specific command line processing/setup
+           bdt     - OS specific bd_t processing
+           prep    - OS specific prep before relocation or go
+           go      - start OS
+
+chpart  - change active partition
+	no partition id specified
+
+clkmsr  - Amlogic measure clock
+	[   0][   0 MHz] am_ring_osc_clk_out_ee[0]   
+	[   1][   0 MHz] am_ring_osc_clk_out_ee[1]   
+	[   2][   0 MHz] am_ring_osc_clk_out_ee[2]   
+	[   3][   0 MHz] A53_ring_osc_clk            
+	[   4][   0 MHz] gp0_pll_clk 
+	.........127lines of clock measurements
+	[ 127][   0 MHz] 1'b0
+	
+cmp     - memory compare
+	Usage:
+	cmp [.b, .w, .l, .q] addr1 addr2 count
+	
+cp      - memory copy
+	Usage:
+	cp [.b, .w, .l, .q] source target count
+	
+crc32   - checksum calculation
+	Usage:
+	crc32 address count [addr]
+	   - compute CRC32 checksum [save at addr]
+
+dcache  - enable or disable data cache
+	Data (writethrough) Cache is ON
+	
+defenv_reserv- reserve some specified envs after defaulting env
+	## defenv_reserve
+	
+dovi    - Dolby_vision sub-system
+	Usage:
+	dovi set------------  apply core settings 
+	dovi pkg--------------send hdmi pkt
+	dovi rv---------------Dolby_vision read registers
+	dovi wv---------------Dolby_vision write registers
+	dovi debug------------debug dolby vision
+	
+echo    - echo args to console
+
+efuse   - efuse commands
+	Usage:
+	efuse [read/write offset size [data]]
+	   [read/wirte]  - read or write 'size' data from
+           	'offset' from efuse user data ;
+	   [offset]      - the offset byte from the beginning
+           	of efuse user data zone;
+	   [size]        - data size
+	   [data]        - the optional argument for 'write',
+           	data is treated as characters
+  	   	examples: efuse write 0xc 0xd abcdABCD1234
+	   [amlogic_set addr]
+	   
+efuse_user - efuse user space read write ops
+	Usage:
+	efuse_user init <dtbAddr>  --- init efuse user space
+	size keyname <addr>  --- get key size configured in dts
+	read keyname addr <size> --- read key value to mem addr 
+	write --- write key value
+	   efuse_user write keyname hexstring --- write key value in hex string
+	   efuse_user write keyname addr size --- write key value, U need load you key value into mem addr first
+
+emmc    - EMMC sub system
+	Usage:
+	emmc dtb_read addr size
+	emmc dtb_write addr size
+	emmc erase dtb
+	emmc erase key
+	emmc fastboot_read addr size
+	emmc fastboot_write addr size
+
+env     - environment handling commands
+	Usage:
+	env default [-f] -a - [forcibly] reset default environment
+	env default [-f] var [...] - [forcibly] reset variable(s) to their default values
+	env delete [-f] var [...] - [forcibly] delete variable(s)
+	env export [-t | -b | -c] [-s size] addr [var ...] - export environment
+	env import [-d] [-t [-r] | -b | -c] addr [size] - import environment
+	env print [-a | name ...] - print environment
+	env run var [...] - run commands in an environment variable
+	env set [-f] name [arg ...]
+
+exit    - exit script
+
+false   - do nothing, unsuccessfully
+
+fastboot- use USB Fastboot protocol
+
+fatinfo - print information about filesystem
+	usage: fatinfo <interface> [<dev[:part]>]
+	
+fatload - load binary file from a dos filesystem
+	Usage:
+fatload <interface> [<dev[:part]> [<addr> [<filename> [bytes [pos]]]]]
+	- Load binary file 'filename' from 'dev' on 'interface'
+	  to address 'addr' from dos filesystem.
+	  'pos' gives the file position to start loading from.
+	  If 'pos' is omitted, 0 is used. 'pos' requires 'bytes'.
+	  'bytes' gives the size to load. If 'bytes' is 0 or omitted,
+	  the load stops on end of file.
+	  If either 'pos' or 'bytes' are not aligned to
+	  ARCH_DMA_MINALIGN then a misaligned buffer warning will
+	  be printed and performance will suffer for the load.
+
+fatls   - list files in a directory (default /)
+	  fatls <interface> [<dev[:part]>] [directory]
+	- list files from 'dev' on 'interface' in a 'directory'
+	
+fatsize - determine a file's size
+	Usage:
+	fatsize <interface> <dev[:part]> <filename>
+	   - Find file 'filename' from 'dev' on 'interface'
+	     and determine its size.
+
+fdt     - flattened device tree utility commands
+	Usage:
+	fdt addr [-c]  <addr> [<length>]   - Set the [control] fdt location to <addr>
+	fdt boardsetup                      - Do board-specific set up
+	fdt move   <fdt> <newaddr> <length> - Copy the fdt to <addr> and make it active
+	fdt resize                          - Resize fdt to size + padding to 4k addr
+	fdt print  <path> [<prop>]          - Recursive print starting at <path>
+	fdt list   <path> [<prop>]          - Print one level starting at <path>
+	fdt get value <var> <path> <prop>   - Get <property> and store in <var>
+	fdt get name <var> <path> <index>   - Get name of node <index> and store in <var>
+	fdt get addr <var> <path> <prop>    - Get start address of <property> and store in <var>
+	fdt get size <var> <path> [<prop>]  - Get size of [<property>] or num nodes and store in <var>
+	fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]
+	fdt mknode <path> <node>            - Create a new node after <path>
+	fdt rm     <path> [<prop>]          - Delete the node or <property>
+	fdt header                          - Display header info
+	fdt bootcpu <id>                    - Set boot cpuid
+	fdt memory <addr> <size>            - Add/Update memory node
+	fdt rsvmem print                    - Show current mem reserves
+	fdt rsvmem add <addr> <size>        - Add a mem reserve
+	fdt rsvmem delete <index>           - Delete a mem reserves
+	fdt chosen [<start> <end>]          - Add/update the /chosen branch in the tree
+                                        <start>/<end> - initrd start/end addr
+	NOTE: Dereference aliases by omiting the leading '/', e.g. fdt print ethernet0.
+
+forceupdate - forceupdate
+
+get_rebootmode - get reboot mode
+
+get_system_as_root_mode - get_system_as_root_mode
+	CONFIG_SYSTEM_AS_ROOT: systemroot
+	
+get_valid_slot - get_valid_slot
+	Start read misc partition datas!
+	info->attemp_times = 0
+	info->active_slot = 0
+	info->slot_info[0].bootable = 1
+	info->slot_info[0].online = 1
+	info->slot_info[1].bootable = 0
+	info->slot_info[1].online = 0
+	info->attemp_times = 0
+	attemp_times = 0 
+	active slot = 0
+	
+go      - start application at address 'addr'
+	Usage:
+	go addr [arg ...]
+	- start application at address 'addr'
+	  passing 'arg' as arguments
+	  
+gpio    - query and control gpio pins
+	Usage:
+	gpio <input|set|clear|toggle> <pin>
+	- input/set/clear/toggle the specified pin
+	gpio status [-a] [<bank> | <pin>]  - show [all/claimed] GPIOs
+
+gpt     - GUID Partition Table
+	Usage:
+	gpt <command> <interface> <dev> <partitions_list>
+	- GUID partition table restoration and validity check
+	  Restore or verify GPT information on a device connected
+ 	  to interface
+  	    Example usage:
+	    gpt write mmc 1 $partitions
+	    gpt verify mmc 1 $partitions
+	  read <interface> <dev>
+	    - read GPT into a data structure for manipulation
+	  guid <interface> <dev>
+	    - print disk GUID
+	  guid <interface> <dev> <varname>
+	    - set environment variable to disk GUID
+	    Example usage:
+	    gpt guid mmc 1
+	    gpt guid mmc 1 varname
+	  
+	gpt partition renaming commands:
+	  gpt swap <interface> <dev> <name1> <name2>
+	    - change all partitions named name1 to name2
+	      and vice-versa
+	  gpt rename <interface> <dev> <part> <name>
+	    - rename the specified partition
+	    Example usage:
+	    gpt swap mmc 1 foo bar
+	    gpt rename mmc 1 3 foo
+
+guid    - GUID - generate Globally Unique Identifier based on random UUID
+
+hdmitx  - HDMITX sub-system
+	Usage:
+	hdmitx hdmitx hpd
+	    Detect hdmi rx plug-in
+	hdmitx get_preferred_mode
+	    Read full edid data, parse edid, and get preferred mode
+	hdmitx output [list | FORMAT | bist PATTERN]
+	    list: list support formats
+	    FORMAT can be 720p60/50hz, 1080i60/50hz, 1080p60hz, etc
+	       extend with 8bits/10bits, y444/y422/y420/rgb
+	       such as 2160p60hz,10bits,y420
+	    PATTERN: can be as: line, dot, off, or 1920(width)
+	hdmitx blank [0|1]
+	    1: output blank  0: output normal
+	hdmitx off
+	    Turn off hdmitx output
+	hdmitx info
+	    current mode info
+	hdmitx rx_det
+	    Auto detect if RX is FBC and set outputmode
+
+help    - print command description/usage (this list here)
+
+i2c     - I2C sub-system
+	Usage:
+	i2c crc32 chip address[.0, .1, .2] count - compute CRC32 checksum
+	i2c dev [dev] - show or set current I2C bus
+	i2c loop chip address[.0, .1, .2] [# of objects] - looping read of device
+	i2c md chip address[.0, .1, .2] [# of objects] - read from I2C device
+	i2c mm chip address[.0, .1, .2] - write to I2C device (auto-incrementing)
+	i2c mw chip address[.0, .1, .2] value [count] - write to I2C device (fill)
+	i2c nm chip address[.0, .1, .2] - write to I2C device (constant address)
+	i2c probe [address] - test for and show device(s) on the I2C bus
+	i2c read chip address[.0, .1, .2] length memaddress - read to memory
+	i2c write memaddress chip address[.0, .1, .2] length - write memory to i2c
+	i2c flags chip [flags] - set or get chip flags
+	i2c reset - re-init the I2C Controller
+	i2c speed [speed] - show or set I2C bus speed
+
+icache  - enable or disable instruction cache
+	Instruction Cache is ON
+	
+idme    - idme support
+
+img_osd - image osd sub-system
+	Usage:
+	img_osd mode_set <mode>                       - set img load mode(middle:0, rect:1, full_screen:2)
+	img_osd addr_set <addr>                       - set img addr
+	img_osd type_set <type>                       - set img type(bmp:0, raw:1)
+	img_osd init [raw_width raw_height raw_bpp]   - init osd device
+	img_osd clear                                 - clear osd framebuffer
+	img_osd uninit                                - uninit osd device
+	img_osd display <imageAddr> [x y]             - display image
+	img_osd scale 
+	imgread - Read the image from internal flash with actual size
+	itest   - return true/false on integer compare
+	
+jtagoff - disable jtag
+	Usage:
+	jtagoff jtagoff [apao|apee|scpao|scpee]
+
+jtagon  - enable jtag
+	Usage:
+	jtagon jtagon [apao|apee|scpao|scpee] [0|1]
+	 [apao|apee|scpao|scpee]  - ap or scp jtag connect to ao or ee domain
+	 [0|1]                    - special for gxm, ap jtag to cluster 0 or cluster 1
+
+
+keyman  - Unify key ops interfaces based dts cfg
+	Usage:
+	keyman     argv:  
+	    init seedNum <dtbAddr>
+	    read keyname addr <hex/str>
+	    write keyname size addr 
+	    write keyname hex/str value
+	    query exist/secure/size keyname
+	    exit
+	    
+keyunify - key unify sub-system
+	Usage:
+	keyunify init seedNum [dtbAddr] --init the drivers
+	keyunify uninit - init key in device
+	keyunify write keyname data <len>  ---- wirte key data. len non-exist if data is ascii str
+	keyunify read keyname data-addr <len> 
+	
+loadb   - load binary file over serial line (kermit mode)
+	## Ready for binary (kermit) download to 0x01080000 at 921600 bps...
+	
+loadx   - load binary file over serial line (xmodem mode)
+	## Ready for binary (xmodem) download to 0x01080000 at 921600 bps...
+	
+loady   - load binary file over serial line (ymodem mode)
+	## Ready for binary (xmodem) download to 0x01080000 at 921600 bps...
+	
+loop    - infinite loop on address range
+	Usage:
+	loop [.b, .w, .l, .q] address number_of_objects
+	
+md      - memory display
+
+mm      - memory modify (auto-incrementing address)
+	Usage:
+	mm [.b, .w, .l, .q] address
+	
+mmc     - MMC sub system
+	Usage:
+	mmc info - display info of the current MMC device
+	mmc read addr blk# cnt
+	mmc write addr blk# cnt
+	mmc erase blk# cnt
+	mmc rescan
+	mmc part - lists available partition on current mmc device
+	mmc dev [dev] [part] - show or set current mmc device [partition]
+	mmc list - lists available devices
+	mmc lifetime - show dev life time estimate type A/B
+	mmc ext_csd [byte] <val> - read/write ext_csd [byte] value
+	mmc ffu ver addr cnt - update ffu fw
+	mmc hwpartition [args...] - does hardware partitioning
+	  arguments (sizes in 512-byte blocks):	
+	    [user [enh start cnt] [wrrel {on|off}]] - sets user data area attributes
+	    [gp1|gp2|gp3|gp4 cnt [enh] [wrrel {on|off}]] - general purpose partition
+	    [check|set|complete] - mode, complete set partitioning completed
+	  WARNING: Partitioning is a write-once setting once it is set to complete.
+	  Power cycling is required to initialize partitions after set to complete.
+	mmc setdsr <value> - set DSR register value
+	mmc test <blk_start> <blk_size> <times> - erase, read and write appointed
+	 - Position and size multiple times
+
+mmcinfo - display MMC info
+	card out
+	
+mtdparts - define flash/nand partitions
+
+mw      - memory write (fill)
+	Usage:
+	mw [.b, .w, .l, .q] address value [count]
+
+mwm     - mw mask function
+	mwm [reg] [value] [mask]
+	    //write [reg] with [value], skip [mask] bits
+	eg: mwm 0x01000000 0xaaaabbbb 0x0000ffff
+	    then read 0x01000000 = 0xaaaaXXXX //skip mask bits
+	    
+nand    - NAND sub-system
+	Usage:
+	nand info - show available NAND devices
+	nand device [dev] - show or set current device
+	nand read - addr off|partition size
+	nand write - addr off|partition size
+	    read/write 'size' bytes starting at offset 'off'
+	    to/from memory address 'addr', skipping bad blocks.
+	nand read.raw - addr off|partition [count]
+	nand write.raw - addr off|partition [count]
+	    Use read.raw/write.raw to avoid ECC and access the flash as-is.
+	nand erase[.spread] [clean] off size - erase 'size' bytes from offset 'off'
+	    With '.spread', erase enough for given file size, otherwise,
+	    'size' includes skipped bad blocks.
+	nand erase.part [clean] partition - erase entire mtd partition'
+	nand erase.chip [clean] - erase entire chip'
+	nand bad - show bad blocks
+	nand dump[.oob] off - dump page
+	nand torture off - torture block at offset
+	nand scrub [-y] off size | scrub.part partition | scrub.chip
+	    really clean NAND erasing bad blocks (UNSAFE)
+	nand markbad off [...] - mark bad block(s) at offset (UNSAFE)
+	nand biterr off - make a bit error at offset (UNSAFE)
+	
+nboot   - boot from NAND device
+	** No boot device **
+	
+nm      - memory modify (constant address)
+	Usage:
+	nm [.b, .w, .l, .q] address
+
+open_scp_log - print SCP messgage
+	open paramets is following:
+	command
+	accel
+	charger
+	chipset
+	clock
+	dma
+	events
+	gesture
+	gpio
+	hostcmd
+	i2c
+	keyboard
+	keyscan
+	lidangle
+	lightbar
+	lpc
+	motionlid
+	motionsense
+	pdhostcmd
+	port80
+	pwm
+	spi
+	switch
+	system
+	task
+	thermal
+	usb
+	usbms
+	usbcharge
+	usbpd
+	vboot
+	hook
+
+osd     - osd sub-system
+	Usage:
+	osd open                         - open osd device
+	osd enable                       - enable osd device
+	osd close                        - close osd device
+	osd clear                        - clear osd framebuffer
+	osd debug                        - debug osd device
+	osd test [osdID]                 - test osd device
+	osd display <imageAddr> [x y]    - display image
+	osd set <osdID> <a> <b> <c> <d>  - set Hist GoldenData in env
+	                                        a for hist_max_min
+	                                        b for hist_spl_val
+	                                        c for hist_spl_pix_cnt
+	                                        d for hist_cheoma_sum
+	osd get                          - get Hist GoldenData from env
+	
+plltest - test pll
+	Usage:
+	plltest 
+        - test pll and report result
+
+	plltest [all/sys/hdmi/gp0] [pll_cntl pll_cntl2 ...]
+
+	examples:
+	plltest all                                 - test all plls
+	plltest sys                                 - test sys pll with all preset freq
+	plltest sys cntl cntl1 cntl2 ...            - test sys pll with params
+	plltest hdmi                                - test hdmi pll with all preset freq
+	plltest hdmi cntl cntl1 cntl2 ...           - test hdmi pll with params
+	plltest gp0                                 - test gp0 pll with all preset freq
+	plltest gp0 cntl cntl1 cntl2 ...            - test gp0 pll with params
+
+printenv- print environment variables
+	EnableSelinux=enforcing
+	OTG_mode=DEVICE
+	active_slot=_a
+	aml_dt=g12brevb_raven_2g
+	baudrate=921600
+	bcb_cmd=get_valid_slot;
+	boot_part=boot
+	bootargs=init=/init console=ttyS0,921600 no_console_suspend earlycon=aml-uart,0xff803000 
+		ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 rootfstype=ramfs 
+		logo=osd0,loaded,0x3d800000 vout=auto,enable panel_type=lcd_1 hdmimode=auto 
+		hdmichecksum=0x00000000 frac_rate_policy=1 cvbsmode=576cvbs osd_reverse=0 video_reverse=0 
+		androidboot.selinux=enforcing androidboot.firstboot=1 androidboot.rpmb_state=0jtag=disable 
+		OTG_mode=DEVICE androidboot.hardware=amlogic androidboot.serialno=123456789ABCDEFG 
+		androidboot.slot_suffix=normal
+	bootcmd=run storeboot
+	bootdelay=1
+	bootup_offset=0x1086618
+	bootup_size=0x5eec38
+	colorattribute=rgb,8bit
+	cvbs_drv=0
+	cvbsmode=576cvbs
+	display_bpp=24
+	display_color_bg=0
+	display_color_fg=0xffff
+	display_color_index=24
+	display_height=0
+	display_hot=hdmitx hpd;hdmitx get_parse_edid;dovi process;osd open;osd clear;imgread pic logo 
+		hot $loadaddr;bmp display $hot_offset;bmp scale;vout output ${outputmode};dovi set;dovi pkg
+	display_layer=osd0
+	display_width=0
+	dtb_mem_addr=0x1000000
+	factory_reset_poweroff_protect=echo wipe_data=${wipe_data}; echo wipe_cache=${wipe_cache};if test 
+		${wipe_data} = failed; then run init_display; run storeargs;if mmcinfo; then run 
+		recovery_from_sdcard;fi;if usb start 0; then run recovery_from_udisk;fi;run 
+		recovery_from_flash;fi; if test ${wipe_cache} = failed; then run init_display; run storeargs;
+		if mmcinfo; then run recovery_from_sdcard;fi;if usb start 0; then run recovery_from_udisk;fi;
+		run recovery_from_flash;fi; 
+	fastboot_burning=fastboot
+	fb_addr=0x3d800000
+	fb_height=1080
+	fb_width=1920
+	fdt_high=0x20000000
+	firstboot=1
+	frac_rate_policy=1
+	fs_type=rootfstype=ramfs
+	hdmichecksum=0x00000000
+	hdmimode=auto
+	init_display=hdmitx hpd;hdmitx get_parse_edid;dovi process;osd open;osd clear;imgread pic logo 
+		${logo_name} $loadaddr;bmp display $bootup_offset;bmp scale;vout output ${outputmode};d
+		ovi set;dovi pkg initargs=init=/init console=ttyS0,921600 no_console_suspend 
+		earlycon=aml-uart,0xff803000 ramoops.pstore_en=1 ramoops.record_size=0x8000 
+		ramoops.console_size=0x4000 
+	initrd_high=7f800000
+	irremote_update=if irkey 2500000 0xe31cfb04 0xb748fb04; then echo read irkey ok!; if itest 
+		${irkey_value} == 0xe31cfb04; then run update;else if itest ${irkey_value} == 0xb748fb04; 
+		then run update;\
+	fi;fi;fi;
+	jtag=disable
+	loadaddr=1080000
+	lock=10001000
+	logo_name=bootup
+	max_vs_temp=60000
+	osd_reverse=0
+	outputmode=auto
+	panel_type=lcd_1
+	preboot=run bcb_cmd; run factory_reset_poweroff_protect;run upgrade_check;run thermal_check;
+		run init_display;run storeargs;forceupdate;bcb uboot-command;run switch_bootmode;
+	reboot_mode=cold_boot
+	recovery_from_flash=setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part={recovery_part}
+		recovery_offset={recovery_offset};if imgread kernel ${recovery_part} ${loadaddr} 
+		${recovery_offset}; then bootm ${loadaddr}; fi recovery_from_sdcard=if fatload mmc 0 
+		${loadaddr} aml_autoscript; then autoscr ${loadaddr}; fi;if fatload mmc 0 ${loadaddr} 
+		recovery.img; then if fatload mmc 0 ${dtb_mem_addr} dtb.img; then echo sd dtb.img 
+		loaded; fi;bootm ${loadaddr};fi; recovery_from_udisk=if fatload usb 0 ${loadaddr} 
+		aml_autoscript; then autoscr ${loadaddr}; fi;if fatload usb 0 ${loadaddr} recovery.img; 
+		then if fatload usb 0 ${dtb_mem_addr} dtb.img; then echo udisk dtb.img loaded; fi;bootm 
+		${loadaddr};fi;
+	recovery_offset=0
+	recovery_part=recovery
+	rpmb_state=0
+	saradc_val=0x1e4
+	sdc_burning=sdc_burn ${sdcburncfg}
+	sdcburncfg=aml_sdc_burn.ini
+	stderr=serial
+	stdin=serial
+	stdout=serial
+	storeargs=setenv bootargs ${initargs} ${fs_type} logo=${display_layer},loaded,${fb_addr} 
+		vout=${outputmode},enable panel_type=${panel_type} hdmimode=${hdmimode} 
+		hdmichecksum=${hdmichecksum} frac_rate_policy=${frac_rate_policy} cvbsmode=${cvbsmode} 
+		osd_reverse=${osd_reverse} video_reverse=${video_reverse} 
+		androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} 
+		androidboot.rpmb_state=${rpmb_state} jtag=${jtag}; setenv bootargs ${bootargs} 
+		OTG_mode=${OTG_mode} androidboot.hardware=amlogic androidboot.serialno=123456789ABCDEFG;
+		setenv bootargs ${bootargs} androidboot.slot_suffix=normal;
+	storeboot=boot_cooling;get_system_as_root_mode;echo system_mode: ${system_mode};
+		if test ${system_mode} = 1; then setenv fs_type ro rootwait skip_initramfs;run storeargs;
+		fi;if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;run update;
+	switch_bootmode=get_rebootmode;if test ${reboot_mode} = factory_reset; then run 
+		recovery_from_flash;else if test ${reboot_mode} = update; then else if test 
+		${reboot_mode} = cold_boot; then else if test ${reboot_mode} = fastboot; then fastboot;
+		fi;fi;fi;fi;
+	tempvs=25100
+	thermal_check=read_vs_temp;if itest ${tempvs} > ${max_vs_temp}; then run display_hot;while 
+		itest ${tempvs} > ${max_vs_temp}; do read_vs_temp; echo cool wait; sleep 1; done;else fi;
+	try_auto_burn=update 700 750;
+	update=run fastboot_burning; run recovery_from_flash;
+	upgrade_check=echo upgrade_step=${upgrade_step}; if itest ${upgrade_step} == 3; then run 
+		init_display; run storeargs; run update;else fi;
+	upgrade_key=if gpio input GPIOAO_3; then echo detect upgrade key; run update;fi;
+	upgrade_step=0
+	video_reverse=0
+	wipe_cache=successful
+	wipe_data=successful
+
+query   - SoC query commands
+	Usage:
+	query [query SecureBoot/Dolby/DTS]
+	  [SecureBoot]  - query SoC is secure boot enabled(1) or not(0)
+	  [Dolby]       - query SoC support Dolby (1) or not(0)
+	  [DTS]         - query SoC support DTS (1) or not(0)
+	  examples: query SecureBoot
+	  
+read_temp - cpu temp-system
+	pll tsensor avg: 0x1ee1, u_efuse: 0x8135
+	temp1: 25
+	ddr tsensor avg: 0x1efc, u_efuse: 0x80ed
+	temp2: 27
+	read the thermal1 and thermal2
+
+read_vs_temp - vs temp-system
+	Thermal ntc_bts_prepare_table with 7
+	SARADC channel(0) is 0x1ea.
+	[thermal_auxadc_get_data]: ret_temp=490
+	Channel = 0
+	saradc reading 0x1ea, output mV = 861
+	BTS output temperature = 27
+	[ntcts_bts_get_hw_temp] T_AP, 27000
+	Thermal ntc_bts_prepare_table with 7
+	SARADC channel(1) is 0xfa.
+	.....many more lines of data
+
+reboot  - set reboot mode and reboot system
+
+reset   - Perform RESET of the CPU
+
+ringmsr - Amlogic measure ring
+	Usage:
+	ringmsr ringmsr x
+	  - for get chip ring info
+	  - x:   
+	  G12A/G12B/TL1:
+	  0x0: print all ring info and set voltage
+	  0x1-0x7: get efuse corner info
+	  0xff: print all ring info and no set voltage
+	  0xfe: print all efuse corner info
+
+rpmb_state - RPMB sub-system
+
+rsvmem  - reserve memory
+	[rsvmem] no check for rsvmem, should check int kernel
+
+run     - run commands in an environment variable
+	Usage:
+	run var [...]
+	    - run the commands in the environment variable(s) 'var'
+
+saradc  - saradc sub-system
+	Usage:
+	saradc saradc open <channel>    - open a SARADC channel
+	saradc close    - close the SARADC
+	saradc getval   - get the value in current channel
+	saradc test     - test the SARADC by channel-7
+	saradc get_in_range <min> <max> - return 0 if current value in the range of current channel
+
+saradc_12bit - saradc sub-system
+	Usage:
+	saradc_12bit saradc_12bit open <channel>        - open a SARADC channel
+	saradc_12bit close      - close the SARADC
+	saradc_12bit getval     - get the value in current channel
+	saradc_12bit get_in_range <min> <max>   - return 0 if current value in the range of current channel
+
+sdc_burn - Burning with amlogic format package in sdmmc 
+	Usage:
+	sdc_burn argv: [sdc_burn_cfg_file]
+	    -aml_sdc_burn.ini is usually used configure file
+	    
+sdc_update - Burning a partition with image file in sdmmc card
+	Usage:
+	sdc_update     argv: <part_name> <image_file_path> <[,fileFmt]> <[,verify_file]> 
+	    - <fileFmt> parameter is optional, if you know it you can specify it.
+	        for Android, system.img and data.img is "sparse" format, other is "normal"
+	    - <verify_file> parameter is optional, if you have it you can specify it.
+	    - e.g. 
+	        to burn partition boot with boot.img of mmc 0 : "sdc_update boot boot.img"
+	        to burn partition system with system.img of mmc 0 : "sdc_update system system.img"
+
+set_active_slot - set_active_slot
+	Usage:
+	set_active_slot 
+	This command will set active slot
+	So you can execute command: set_active_slot a
+
+set_trim_base - cpu temp-system
+	set base temperature: 0
+	
+set_usb_boot - set usb boot mode
+	usb flag default 0
+	usb flag: 0
+
+setenv  - set environment variables
+	Usage:
+	setenv [-f] name value ...
+	    - [forcibly] set environment variable 'name' to 'value ...'
+	setenv [-f] name
+	    - [forcibly] delete environment variable 'name'
+	    
+sf      - SPI flash sub-system
+	Usage:
+	sf probe [[bus:]cs] [hz] [mode] - init flash device on given SPI bus
+	   and chip select
+	sf read addr offset len - read `len' bytes starting at
+	   `offset' to memory at `addr'
+	sf write addr offset len        - write `len' bytes from memory
+	   at `addr' to flash at `offset'
+	sf erase offset [+]len          - erase `len' bytes from `offset'
+	   +len' round up `len' to block size
+	sf update addr offset len       - erase and write `len' bytes from memory
+	   at `addr' to flash at `offset'
+	   
+showvar - print local hushshell variables
+	HUSH_VERSION=0.01
+	
+sleep   - delay execution for some time
+	Usage:
+	sleep N
+	    - delay execution for N seconds (N is _decimal_ !!!)
+
+sspi    - SPI utility command
+	[info]spicc_probe: amlogic,meson-g12a-spicc @00000000ffd15000
+	[info]spicc_cs_gpio_init: cs_gpio[0]=no cs
+	[info]spicc_cs_gpio_init: total (1) slaves
+	
+store   - STORE sub-system
+	Usage:
+	store init flag
+	store read name addr off|partition size
+	    read 'size' bytes starting at offset 'off'
+	    to/from memory address 'addr', skipping bad blocks.
+	store write name addr off|partition size
+	    write 'size' bytes starting at offset 'off'
+	    to/from memory address 'addr', skipping bad blocks.
+	store rom_write add off size.
+	    write uboot to the boot device
+	store erase boot/data: 
+	    erase the area which is uboot or data 
+	store erase partition <partition_name>: 
+	    erase the area which partition in u-boot 
+	store erase dtb 
+	store erase key 
+	store disprotect key 
+	store rom_protect on/off 
+	store scrub off|partition size
+	    scrub the area from offset and size 
+	store dtb iread/read/write addr <size>
+           read/write dtb, size is optional 
+	store key read/write addr <size>
+      	   read/write key, size is optional 
+	store mbr addr
+   	   update mbr/partition table by dtb
+   	
+systemoff - system off 
+
+tee_log_level - update tee log level
+	Usage:
+	tee_log_level [log_level],
+	the min log level is 1, and the max log level is related to Secure OS version
+
+temp_triming - cpu temp-system
+	Usage:
+	temp_triming temp_triming x [ver]
+	  - for manual trimming chip
+	  - x:     [decimal]the temperature of the chip surface
+	  - [ver]: [decimal]only for New thermal sensor
+	           BBT: OPS socket board, which can change chips
+	            online: reference boards witch chip mounted
+	        AXG or TXHD:
+	           5  (0101)b: BBT, thermal0
+	           6  (0110)b: BBT, thermal1
+	           7  (0111)b: BBT, thermal01
+	           13  (1101)b: online, thermal0
+	           14  (1110)b: online, thermal1
+	           15  (1111)b: online, thermal01
+	        G12A or G12B:
+	            88  (10001000)b: BBT-SW, thermal1 thermal2, valid thermal cali data
+	            89  (10001001)b: BBT-OPS, thermal1 thermal2, valid thermal cali data
+	            8b  (10001001)b: SLT, thermal1 thermal2, valid thermal cali data
+
+test    - minimal test like /bin/sh
+
+true    - do nothing, successfully
+
+ubi     - ubi commands
+	Usage:
+	ubi part [part] [offset]
+	 - Show or set current partition (with optional VID header offset)
+	ubi info [l[ayout]] - Display volume and ubi layout information
+	ubi check volumename - check if volumename exists
+	ubi create[vol] volume [size] [type] - create volume name with size
+	ubi write[vol] address volume size - Write volume from address with size
+	ubi write.part address volume size [fullsize]
+	 - Write part of a volume from address
+	ubi read[vol] address volume [size] - Read volume to address with size
+	ubi remove[vol] volume - Remove volume
+	[Legends]
+	 volume: character name
+	 size: specified in bytes
+	 type: s[tatic] or d[ynamic] (default=dynamic)
+
+ubifsload - load file from an UBIFS filesystem
+	Usage:
+	ubifsload <addr> <filename> [bytes]
+	    - load file 'filename' to address 'addr'
+
+ubifsls - list files in a directory
+	Usage:
+	ubifsls [directory]
+	    - list files in a 'directory' (default '/')
+    	
+ubifsmount - mount UBIFS volume
+	ubifsmount <volume-name>
+	    - mount 'volume-name' volume
+
+ubifsumount- unmount UBIFS volume
+	Usage:
+	ubifsumount
+	    - unmount current volume
+
+unpackimg - un pack logo image into pictures
+
+update  - Enter v2 usbburning mode
+
+usb     - USB sub-system
+	Usage:
+	usb start - start (scan) USB controller
+	usb reset - reset (rescan) USB controller
+	usb stop [f] - stop USB [f]=force stop
+	usb tree - show USB device tree
+	usb info [dev] - show available USB devices
+	usb test [dev] [port] [mode] - set USB 2.0 test mode
+	    (specify port 0 to indicate the device's upstream port)
+	    Available modes: J, K, S[E0_NAK], P[acket], F[orce_Enable]
+	usb storage - show details of USB storage devices
+	usb dev [dev] - show or set current USB storage device
+	usb part [dev] - print partition table of one or all USB storage    devices
+	usb read addr blk# cnt - read `cnt' blocks starting at block `blk#'
+	    to memory address `addr'
+	usb write addr blk# cnt - write `cnt' blocks starting at block `blk#'
+	    from memory address `addr'
+
+usb_burn - Burning with amlogic format package in usb 
+	Usage:
+	usb_burn argv: [sdc_burn_cfg_file]
+	    -aml_sdc_burn.ini is usually used configure file
+
+usb_update - Burning a partition with image file in usb host
+	Usage:
+	usb_update     argv: <part_name> <image_file_path> <[,fileFmt]> <[,verify_file]> 
+	    - <fileFmt> parameter is optional, if you know it you can specify it.
+	        for Android, system.img and data.img is "sparse" format, other is "normal"
+	    - <verify_file> parameter is optional, if you have it you can specify it.
+	    - e.g. 
+	        to burn partition boot with boot.img of usb 0 : "usb_update boot boot.img"
+	        to burn partition system with system.img of usb 0 : "usb_update system system.img"
+
+usbbc   - test usb bc
+	USB3.0 XHCI init start
+	detect ID pin : Device mode  , r5.b.iddig_curr=1nboard_usb_stop cfg: 2
+
+usbboot - boot from USB device
+	** No device specified **
+
+uuid    - UUID - generate random Universally Unique Identifier
+	8ef917d1-2c6f-4bd0-a5b2-331a19f91cb2
+
+version - print monitor, compiler and linker version
+
+viu_probe - enable viu probe in no secure chip
+
+vout    - VOUT sub-system
+	vout vout [list | output format | info]
+	    list : list for valid video mode names.
+	    format : perfered output video mode
+	    info : dump vinfo
+	    
+vpp     - vpp sub-system
+	Usage:
+	vpp osd+video pq value  brightness/contrast/saturation/hue parameters
+	
+vpu     - vpu sub-system
+	Usage:
+	vpu vpu probe        - enable vpu domain
+	vpu remove       - disable vpu domain
+	vpu test         - test vcbus access
+
+write_trim - cpu temp-system
+	Usage:
+	write_trim write_trim data
+	
+write_version - cpu temp-system
+	Usage:
+	write_version write_flag
+
+

@@ -1,0 +1,66 @@
+Fos, Dev, and Usr flags can be set in fastboot mode
+
+FOS Flags		Hex Value (bitmask)
+none (default)		= 0x000
+ADB on			= 0x001
+ADB root 		= 0x002
+Console on		= 0x004 (enables uart output from the kernel)
+Ramdump on 		= 0x008
+Verbosity on		= 0x010
+ADB auth disable 	= 0x020
+DM-verity off		= 0x080
+Boot dexopt 		= 0x100
+
+Example: If you'd like ADB on, ADB root, console on, and DM verity off, then 0x01 + 0x02 + 0x04 0x80 = 0x87.
+Fastboot oem flags fos: 0x87
+
+Dev Flags			Hex Value
+SElinux=enforcing (default)	= 0x032
+SElinux=permissive		= 0x064
+
+Example: Setting dev flag to permissive still requires adding it to the fastboot cmdline
+Fastboot oem flags dev: 0x64
+Fastboot boot boot.img -c "rootfstype=ext4 ro rootwait skip_initramfs androidboot.selinux=permissive"
+
+We were unable to find any functionality for the usr flags.  They can be set like so:
+Fastboot oem flags usr: 'hex value'
+
+
+Flag values are stored in IDME and can be added their directly.  For a list of IDME variables type:
+fastboot oem idme ?
+
+UFBL idme items number:31
+name:             board_id, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000000000]
+name:               serial, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000000000]
+name:             mac_addr, size:  16, exportable: 1, permission: r--r--r--, data: [000000000000]
+name:              mac_sec, size:  32, exportable: 1, permission: r--r-----, data: [00000000000000000000]
+name:          bt_mac_addr, size:  16, exportable: 1, permission: r--r--r--, data: [000000000000]
+name:               bt_mfg, size: 128, exportable: 1, permission: r--r--r--, data: [0]
+name:             wifi_mfg, size: 1024, exportable: 1, permission: r--r--r--, data: [0]
+name:         product_name, size:  32, exportable: 1, permission: r--r--r--, data: [0]
+name:            productid, size:  32, exportable: 1, permission: r--r--r--, data: [0]
+name:           productid2, size:  32, exportable: 1, permission: r--r--r--, data: [0]
+name:             bootmode, size:   4, exportable: 1, permission: r--r--r--, data: [1]
+name:             postmode, size:   4, exportable: 1, permission: r--r--r--, data: [0]
+name:            bootcount, size:   8, exportable: 1, permission: r--r--r--, data: [0]
+name:        manufacturing, size: 512, exportable: 1, permission: r--r--r--, data: [0000000000000000]
+name:          unlock_code, size: 1024, exportable: 1, permission: r--r--r--, data: []
+name:             miccal.0, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.1, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.2, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.3, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.4, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.5, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.6, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:             miccal.7, size:  16, exportable: 1, permission: r--r--r--, data: [0000000000]
+name:               alscal, size: 1024, exportable: 1, permission: r--r--r--, data: [ams_0_0=0,0,0 ams_400_0=297,222,177 ams_]
+name:       device_type_id, size:  32, exportable: 1, permission: r--r--r--, data: [A2JKHJ0PX4J3L3]
+name:            dev_flags, size:   8, exportable: 1, permission: r--r--r--, data: [0]
+name:            fos_flags, size:   8, exportable: 1, permission: r--r--r--, data: [0]
+name:            usr_flags, size:   8, exportable: 1, permission: r--r--r--, data: [0]
+name:                 keys, size: 92168, exportable: 1, permission: r--r--r--, data: []
+name:           mfg.locale, size:  64, exportable: 1, permission: r--r--r--, data: [en-GB]
+name:            ledparams, size:  64, exportable: 1, permission: r--r--r--, data: [ledcalibparams=1,0x00000000,0x00000000]
+
+IDME variables can also be edited from ADB root with the command 'IDME'
+
