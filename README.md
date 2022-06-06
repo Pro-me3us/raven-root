@@ -93,7 +93,6 @@ AES key locations for decrypting the bootloader<br><br>
 
 [SRAM]<br>
 1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br>
-
 [Bootloader Bl30]<br>
 2) <code>0x1061C</code><br>
 3) <code>0x10A84</code><br>
