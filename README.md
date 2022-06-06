@@ -128,8 +128,8 @@ The trimmed Bl2.bin is then edited in disassembly, patching out a serious of sig
 +00008df8 1f 20 03 d5     nop
 +00008dfc 1f 20 03 d5     nop
 +00008e00 1f 20 03 d5     nop
-
-       
+```
+```      
 -00008ffc 20 00 00 b0     adrp       x0,0xd000
 -00009000 00 dc 2e 91     add        x0=>s_DDR_fip_hdr_check_fail,_retry!_0000dbb7,
 -00009004 03 0e 00 94     bl         FUN_0000c810                                  
@@ -140,8 +140,8 @@ The trimmed Bl2.bin is then edited in disassembly, patching out a serious of sig
 +00009004 1f 20 03 d5     nop
 +00009008 1f 20 03 d5     nop
 +0000900c 1f 20 03 d5     nop
-
-
+```
+```
 -0000bbcc 9c 02 00 94     bl         FUN_0000c63c
 +0000bbcc 00 00 80 52     mov        w0,#0x0
 ```
