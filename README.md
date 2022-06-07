@@ -1,4 +1,4 @@
-# Temporary unlock of the FireTV 2nd gen Cube
+# Temporary unlock: FireTV 2nd gen Cube
 Non-persistently enable access to all the system features on the Fire TV 2nd gen Cube.  This includes all u-boot & fastboot commands, Amlogic burn mode, TWRP, FireOS with ADB root and selinux permissive, Magisk support, and booting alternative OS's from USB.  As this tool is non-persistent, it will need to be reloaded from a connected computer after any reboot.
 
 # About the exploit
