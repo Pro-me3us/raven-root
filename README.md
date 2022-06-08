@@ -168,7 +168,66 @@ With both a patched Bl2 image to use as a payload for amlogic-usbdl, and bootloa
 2) Continue the bootup proccess by loading the rest of the patched bootloader<br>
 ```sudo ./update bl2_boot bootloader.img```
 
-Several bootloaders 
+The boot mode is set in <a href="https://github.com/Pro-me3us/raven_bootloader_builder/blob/main/README.md#setting-the-boot-mode">main.c</a> (Bl33).  Boot modes include fastboot, Amlogic burn mode (update) and U-Boot console.  
+
+#### Amlogic burn mode
+Burn mode can be used to transmit (RX) U-Boot console commands over USB, but UART is still required to visualize the output (TX).
+```
+sudo ./update bulkcmd "u-boot command"
+```
+Additionally, the various eMMC partitions from the Cube can be downloaded or flashed in this mode. To download a parition, specify the partition name, size, and output file name.  We want to extract the boot partition to use with fastboot and to use for TWRP and Magisk.
+```
+./update mread store boot normal 0x001800000 backups/boot.img
+```
+#### Fastboot mode
+Booting to fastboot gives us access to Amazon's IDME settings.<br>
+```
+fastboot oem idme ?
+```
+There are a number of fields that can be edited, but of particular note are the dev_flags and fos_flags.  The fos_flags value can be modified to add mulitple useful features. 
+
+**FOS Flags		    Hex Value (bitmask)**<br>
+none (default)		= 0x000<br>
+ADB on			    = 0x001<br>
+ADB root 		    = 0x002<br>
+Console on		    = 0x004 (enables uart output from the kernel)<br>
+Ramdump on 		    = 0x008<br>
+Verbosity on		= 0x010<br>
+ADB auth disable 	= 0x020<br>
+DM-verity off		= 0x080<br>
+Boot dexopt 		= 0x100<br><br>
+
+Example of enabling multiple features, ADB on (0x001) + ADB root (0x002) + Console on (0x004) + DM-Verity off (0x080):
+```
+fastboot oem idme fos_flags 0x87
+```
+There are also a couple device specific flags, dev_flags.
+
+**DEV Flags		    Hex Value (bitmask)**<br>
+SElinux=enforcing (default) = 0x0032
+SElinux=permissive		    = 0x0064
+ADB USB on                  = 0x1000
+
+After turning DM-verity off with the fos_flags value, the Cube can boot the extracted boot.img with fastboot.  Additional commands can be added to the kernel boot commandline with fastboot -c
+```
+fastboot boot images/boot.img -c "rootfstype=ext4 ro rootwait skip_initramfs OTG_mode=DEVICE androidboot.selinux=permissive"
+```
+Setting the dev_flags value to permissive still requires also adding the permissive setting to the kernel commandline. "rootfstype=ext4 ro rootwait skip_initramfs" is added to properly mount the eMMC. "OTG_mode=DEVICE" keeps the Cube connected to our computer as a peripheral.
+
+The boot image can also be used to compile a TWRP recovery image for the Cube.  Our TWRP configuration files are available <a href="https://github.com/Pro-me3us/raven_twrp">here</a>.
+
+To use Magisk and gain superuser status with FireOS loaded, we install Magisk Manager (must be at least v24.310, canary build) and patch the boot.img using the recovery mode option, leaving VBmeta unchecked.
+
+Both TWRP and Magisk images can then be loaded with fastboot boot.
+
+TWRP
+```
+fastboot boot images/twrp.img
+```
+FireOS with Magisk support
+```
+fastboot boot images/magisk_boot.img
+```
 
 
 
