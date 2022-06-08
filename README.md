@@ -204,9 +204,9 @@ fastboot oem idme fos_flags 0x87
 There are also a couple device specific flags, dev_flags.
 
 **DEV Flags		    Hex Value (bitmask)**<br>
-SElinux=enforcing (default) = 0x0032
-SElinux=permissive		    = 0x0064
-ADB USB on                  = 0x1000
+SElinux=enforcing (default) = 0x0032<br>
+SElinux=permissive		    = 0x0064<br>
+ADB USB on                  = 0x1000<br><br>
 
 After turning DM-verity off with the fos_flags value, the Cube can boot the extracted boot.img with fastboot.  Additional commands can be added to the kernel boot commandline with fastboot -c
 ```
