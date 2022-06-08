@@ -227,7 +227,8 @@ fastboot boot images/twrp.img
 FireOS with Magisk support
 ```
 fastboot boot images/magisk_boot.img
-```<br><br><br>
+```
+<br><br><br>
 
 A menu bash script is included with this repository to simply the boot process.
 
