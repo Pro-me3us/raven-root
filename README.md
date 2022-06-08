@@ -220,11 +220,11 @@ To use Magisk and gain superuser status with FireOS loaded, we install Magisk Ma
 
 Both TWRP and Magisk images can then be loaded with fastboot boot.
 
-TWRP
+**TWRP recovery**
 ```
 fastboot boot images/twrp.img
 ```
-FireOS with Magisk support
+**FireOS with Magisk support**
 ```
 fastboot boot images/magisk_boot.img
 ```
