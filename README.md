@@ -216,7 +216,7 @@ Setting the dev_flags value to permissive still requires also adding the permiss
 
 The boot image can also be used to compile a TWRP recovery image for the Cube.  Our TWRP configuration files are available <a href="https://github.com/Pro-me3us/raven_twrp">here</a>.
 
-To use Magisk and gain superuser status with FireOS loaded, we install Magisk Manager (must be at least v24.310, canary build) and patch the boot.img using the recovery mode option, leaving VBmeta unchecked.
+To use Magisk and gain superuser status with FireOS loaded, we install Magisk Manager in FireOS (must be at least v24.310, canary build) and patch the boot.img using the recovery mode option, leaving VBmeta unchecked.
 
 Both TWRP and Magisk images can then be loaded with fastboot boot.
 
@@ -227,7 +227,9 @@ fastboot boot images/twrp.img
 FireOS with Magisk support
 ```
 fastboot boot images/magisk_boot.img
-```
+```<br><br><br>
+
+A menu bash script is included with this repository to simply the boot process.
 
 
 
