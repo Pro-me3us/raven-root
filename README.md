@@ -1,7 +1,7 @@
 # Temporary unlock: FireTV 2nd gen Cube
 Non-persistently enable access to all the system features on the Fire TV 2nd gen Cube.  This includes all u-boot & fastboot commands, Amlogic burn mode, TWRP, FireOS with ADB root and selinux permissive, Magisk support, and booting alternative OS's from USB.  As this tool is non-persistent, it will need to be reloaded from a connected computer after any reboot.
 
-#### Discussion & questions<br>
+#### Discussion & questions
 <a href="https://forum.xda-developers.com/t/temporary-unlock-root-twrp-magisk-firetv-2nd-gen-cube-raven.4445971/">XDA Forum</a>
 
 
@@ -237,14 +237,14 @@ fastboot boot images/magisk_boot.img
 A menu bash script is included with this repository to simply the boot process.
  
 ## Contributors
-Pro-me3us
-<a href="https://www.exploitee.rs/">Zenofex</a>
-<a href="https://github.com/npjohnson/sabrina-unlock">Nolen Johnson</a>
-<a href="https://fredericb.info/">Frederic Basse</a>
+Pro-me3us<br>
+<a href="https://www.exploitee.rs/">Zenofex</a><br>
+<a href="https://github.com/npjohnson/sabrina-unlock">Nolen Johnson</a><br>
+<a href="https://fredericb.info/">Frederic Basse</a><br>
 
 ### Extra thanks
-<a href="https://github.com/tchebb">Tchebb</a> - a bottomless encyclopedia of Amlogic knowledge, answering countless questions & troubleshooting
-<a href="https://github.com/chaosmaster">k4y0z</a> - helping get TWRP and Magisk working
+<a href="https://github.com/tchebb">Tchebb</a> - a bottomless encyclopedia of Amlogic knowledge, answering countless questions & troubleshooting<br>
+<a href="https://github.com/chaosmaster">k4y0z</a> - helping get TWRP and Magisk working<br>
 roligov - providing photos, additional FireOS updates, and testing
 
 
