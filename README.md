@@ -234,7 +234,8 @@ fastboot boot images/magisk_boot.img
 ```
 <br><br><br>
 
-A menu bash script is included with this repository to simply the boot process.
+A bash script menu with options to boot to the most common boot modes is included with this repository.<br>
+<code>bash menu</code>
  
 ## Contributors
 Pro-me3us<br>
