@@ -1,6 +1,10 @@
 # Temporary unlock: FireTV 2nd gen Cube
 Non-persistently enable access to all the system features on the Fire TV 2nd gen Cube.  This includes all u-boot & fastboot commands, Amlogic burn mode, TWRP, FireOS with ADB root and selinux permissive, Magisk support, and booting alternative OS's from USB.  As this tool is non-persistent, it will need to be reloaded from a connected computer after any reboot.
 
+#### Discussion & questions
+<a href="https://forum.xda-developers.com/t/temporary-unlock-root-twrp-magisk-firetv-2nd-gen-cube-raven.4445971/">XDA Forum</a>
+
+
 # About the exploit
 This expoit is based on a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">vulnerability</a> in the Amlogic bootrom that allows for us to run unverified code in the ensuing boot stage (Bl2).  To pause the automatic boot up process, before the Cube's saved Bl2 is loaded, we rely on Amlogic's device firmware upgrade mode (DFU).  In DFU, only the boot code from the s922x SOC (Bl1) has been loaded into memory.  We now use the vulnerability to load our modified Bl2, breaking the 'chain of trust', and disabling secure boot so that we can make modifications to the bootloader downstream.  The last stage of the bootloader is U-Boot (Bl33) which hands off the startup process to the boot.img.  Bl33 is modified to unlock any restrictions on U-Boot and fastboot commands, giving us full access to all system features. We can then use fastboot boot to load our modified boot images (TWRP, magisk-patched boot.img), into memory without modifying the Cube.
 
@@ -57,9 +61,9 @@ For bash menu option '3) booting with Magisk support', install the Magisk Manage
 
 
 # Explanation
-In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  Jan Altensen (Stricted) and Nolen Johnson (npjohnson) later extended on this work, releasing a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast.<br>
+In late 2020 security researcher Frederic Basse discovered a <a href="https://fredericb.info/2021/02/amlogic-usbdl-unsigned-code-loader-for-amlogic-bootrom.html">critical bug</a> in the USB stack of the Amlogic S905D3 & S905D3G SOCs that allows for the execution of unsigned code by the bootrom.  As proof of concept he demonstrated that secure boot could be bypassed on the Google Chromecast to <a href="https://fredericb.info/2021/11/booting-ubuntu-on-google-chromecast-with-google-tv.html">boot a custom OS</a> like Ubuntu through the USB interface.  This was further built upon to  release a persistent <a href="https://github.com/npjohnson/sabrina-unlock">bootloader unlock</a> method for the Google Chromecast (Sabrina).<br>
 
-In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube.  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I had a hunch there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Nolen and Frederic which led me down the path of replicating and adapting Frederic's previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses that are specific to the S922X SOC.
+In spring 2022 I came across this work while researching potential vulnerabilities in the 2nd gen Cube.  The Cube uses an S922X SOC which is part of the G12B Amlogic SOC family, and closely related to both the G12A and SM1 (S905D3) families.  Considering their similar architerture, I had a hunch there was a good chance the same S905D3 vulnerability would be present in the S922X.  I got in contact with Frederic, Nolan (Sabrina unlock) and Zenofex (1st gen Cube <a href="https://blog.exploitee.rs/2018/rooting-the-firetv-cube-and-pendant-with-firefu/">FireFu unlock</a>) which led me down the path of replicating and adapting the previous S905D3 methods and tools to the S922X.  To use the amlogic-usbdl exploit tool and payloads written for the S905D3, we would need to obtain the S922X bootrom to update a few of the hardware addresses that are specific to the S922X SOC.
 
 ### Dumping S922X bootrom
 We take advantage of Frederic's previous article on <a href="https://fredericb.info/2021/02/dump-amlogic-s905d3-bootrom-from-khadas-vim3l-board.html">how to dump the S905D3 bootrom</a>.  The guide utilizes a mini Bl2 bootloader script that can be loaded with Amlogic's update tool to dump the bootrom code over UART.  However, running the Bl2 script requires executing code in secure world, which is not possible with secure boot enabled on the Cube. Instead we need a device like Khadas' VIM3L that has secure boot disabled, but with an S922X SOC like Hardkernel's Odroid N2+. With the Odroid N2+, we follow the S905D3 guide to a tee, only using the <code>aml_encrypt_g12b</code> tool, rather than the <code>aml_encrypt_g12b</code> during the build process.  
@@ -110,8 +114,8 @@ With the signed bootloader decrypted, Bl2 can now be edited to remove verificati
 
 The trimmed Bl2.bin is then edited in disassembly, patching out a serious of signature checks that verifies the rest of the bootloader.
 
---- [Bl2.bin]<br>
-+++ [Bl2.patched.bin]<br>
+--- [Original bl2.bin]<br>
++++ [Patched bl2.bin]<br>
 ```
 -00008de0 60 ca 41 79     ldrh       w0,[x19, #0xe4]=>DAT_0001136c
 -00008de4 01 04 00 51     sub        w1,w0,#0x1
@@ -231,7 +235,17 @@ fastboot boot images/magisk_boot.img
 <br><br><br>
 
 A menu bash script is included with this repository to simply the boot process.
+ 
+## Contributors
+Pro-me3us
+<a href="https://www.exploitee.rs/">Zenofex</a>
+<a href="https://github.com/npjohnson/sabrina-unlock">Nolen Johnson</a>
+<a href="https://fredericb.info/">Frederic Basse</a>
 
+### Extra thanks
+<a href="https://github.com/tchebb">Tchebb</a> - a bottomless encyclopedia of Amlogic knowledge, answering countless questions & troubleshooting
+<a href="https://github.com/chaosmaster">k4y0z</a> - helping get TWRP and Magisk working
+roligov - providing photos, additional FireOS updates, and testing
 
 
 
