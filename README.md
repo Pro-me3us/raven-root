@@ -232,7 +232,7 @@ fastboot boot images/twrp.img
 ```
 fastboot boot images/magisk_boot.img
 ```
-<br><br><br>
+<br>
 
 A bash script menu with options to boot to the most common boot modes is included with this repository.<br>
 <code>bash menu</code>
