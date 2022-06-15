@@ -99,7 +99,7 @@ The signed bootloaders are encrypted, and we need to decrypt it in order to make
 AES-256-CBC key locations for decrypting the bootloader<br><br>
 
 [SRAM]<br>
-    1) <code>0xFFFE0020</code> - decrypts Bl2 + Bl30<br><br>
+    1) <code>0xFFFE7C20</code> - decrypts Bl2 + Bl30<br><br>
 [Bootloader Bl30]<br>
     2) <code>0x1061C</code><br>
     3) <code>0x10A84</code><br>
